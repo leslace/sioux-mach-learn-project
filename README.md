@@ -1,1 +1,1 @@
-# sioux-mpm-project
+# sioux-applied-machine-learning
