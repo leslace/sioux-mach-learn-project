@@ -1,30 +1,59 @@
 ---
-title: 'Applied Machine Learning: Stroke'
-author: "Larissa Eisele, Fabian Lüthard, Yves Maillard"
-date: "4/7/2022"
-output: html_document
+output:
+  bookdown::pdf_document2:
+    includes:
+      in_header: latex/preamble.tex
+      before_body: latex/titlepage.tex
+    pandoc_args:
+    - --csl
+    - references/apa.csl
+  bookdown::html_document2:
+    pandoc_args:
+    - --csl
+    - references/apa.csl
+  bookdown::word_document2:
+    pandoc_args:
+    - --csl
+    - references/apa.csl
+toc-title: Table of Contents
+bibliography: references/references.bib
+link-citations: yes
+header-includes:
+- \usepackage{fancyhdr}
+- \pagestyle{fancy}
+- \renewcommand{\headrulewidth}{0pt}
+- \fancyfoot[C]{}
+- \fancyfoot[R]{\thepage}
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, messages = FALSE)
+packages <- c("dplyr","readxl", "curl", "ggplot2", "ggrepel", "maps", "plotly", "stringr", "tm", "wordcloud2", "tidyverse", "RColorBrewer", "ggwordcloud", "viridis", "bookdown", "utils", "leaps", "broom","GGally")
+package.check <- lapply(packages, FUN = function(x) {
+    if (!require(x, character.only = TRUE)) {
+        install.packages(x, dependencies = TRUE)
+        library(x, character.only = TRUE)
+    }
+})
 ```
 
-## R Markdown
+\fancyhead[LR]{}
+\pagenumbering{roman}
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+\newpage
+\cleardoublepage
+\pagenumbering{arabic}
+\fancyhead[L]{Applied Machine Learning and Predictive Modelling: Stroke Data}
+\fancyhead[R]{MPM02}
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
-```
+# Introduction
 
-## Including Plots
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+# Methodology
+
+
+
+**Model**
