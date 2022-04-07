@@ -55,5 +55,19 @@ package.check <- lapply(packages, FUN = function(x) {
 # Methodology
 
 
+# Linear Model
 
-**Model**
+# Generalised Linear Model with family set to Poisson
+
+# Generalised Linear Model with family set to Binomial
+
+# Generalised Additive Model
+
+# Neural Network
+
+# Support Vector Machine
+
+# solve an optimisation problem
+
+
+\newpage
