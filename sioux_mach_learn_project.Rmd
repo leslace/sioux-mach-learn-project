@@ -154,6 +154,21 @@ test - 2
 
 
 # Linear Model
+```{r}
+# qplot -> age/glucose level per stroke
+library(ggplot2)
+ qplot(y = age, x = avg_glucose_level,
+        data = stroke_data,
+        facets = ~ stroke)
+```
+```{r}
+# fitting models for simple regression model
+ lm.stroke <- lm(age ~ avg_glucose_level, data = stroke_data)
+ summary(lm.stroke)
+```
+
+```
+
 
 # Generalised Linear Model with family set to Poisson
 
