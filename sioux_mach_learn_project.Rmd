@@ -57,6 +57,7 @@ We hope that our feature can prevent serious health issues and motivate our user
 ````{r raw_data_view}
 stroke_data <- read_csv('./data/healthcare-dataset-stroke-data.csv')
 stroke_data$bmi <- as.numeric(as.character(stroke_data$bmi))
+stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
 
 head(stroke_data)
 
