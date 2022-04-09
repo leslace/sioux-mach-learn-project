@@ -56,6 +56,7 @@ We hope that our feature can prevent serious health issues and motivate our user
 # Importing Data
 ````{r raw_data_view}
 stroke_data <- read_csv('./data/healthcare-dataset-stroke-data.csv')
+stroke_data$bmi <- as.numeric(as.character(stroke_data$bmi))
 
 head(stroke_data)
 
