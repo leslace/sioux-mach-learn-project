@@ -57,7 +57,7 @@ We hope that our feature can prevent serious health issues and motivate our user
 ````{r raw_data_view}
 stroke_data <- read_csv('./data/healthcare-dataset-stroke-data.csv')
 
-stroke_data
+head(stroke_data)
 
 ````
 ## Summaries
@@ -154,6 +154,15 @@ test - 2
 
 
 # Linear Model
+```{r lm1}
+#Linear model 1
+
+lm.stroke <- lm(age ~ bmi, data = stroke_data)
+
+summary(lm.stroke)
+  
+
+```
 
 # Generalised Linear Model with family set to Poisson
 
