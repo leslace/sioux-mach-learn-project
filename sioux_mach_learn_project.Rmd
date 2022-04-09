@@ -129,15 +129,30 @@ count_by_marriage <- stroke_data %>%
 
 ```{r boxplot_gluc}
 #Boxplot on avg. glucose_level
-
+ggplot(stroke_data, aes(y = avg_glucose_level)) +
+  geom_boxplot()
 ```
 
 ```{r}
-#Boxplot on Age
+#Boxplot on Age 
+ggplot(stroke_data, aes(y = age)) +
+  geom_boxplot() 
 ```
-test - 2
+
+```{r}
+stroke_by_age <- stroke_data %>%
+ dplyr::filter(stroke == 1) %>%
+ ggplot(aes(x = age,
+            y = stroke)) +
+ geom_boxplot()
+
+```
+
+
 ```{r}
 #Boxplot on BMI
+#gplot(stroke_data, aes(y = bmi)) +
+#  geom_boxplot()
 ```
 
 # Methodology
