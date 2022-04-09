@@ -118,21 +118,20 @@ count_by_marriage <- stroke_data %>%
 
 
 
-```
+
 
 ## Scatterplots
 ```{r scatterplots}
 stroke_data %>% 
   ggplot(mapping = aes(x = bmi, y = age, color = stroke)) +
   geom_point() +
-  geom_smooth()
+  geom_smooth(method = 'lm')
 
 stroke_data %>% 
   filter(stroke == 1) %>%
   ggplot(mapping = aes(x = bmi, y = age, color = smoking_status)) +
   geom_point(method = 'lm') +
   geom_smooth(method = 'lm')
-
 
 ```
 
