@@ -167,12 +167,14 @@ stroke_by_age <- stroke_data %>%
 # dplyr::filter(stroke == 1) %>%
  ggplot(aes(x = stroke,
             y = age)) +
-  geom_boxplot(color="orange", fill="yellow", alpha=0.2) +
-  ggtitle("Age by Stroke") + 
-  xlab("Stroke") + ylab("Age") +
-  theme_minimal() + theme(axis.text.x = element_text(angle = 0))
+  geom_boxplot() +
+  labs(title = "Boxplot on no-Stroke (0) and Stroke (1) by Age",
+       x = "No-stroke (0) and Stroke (1)",
+       y = "Age")
+       color = "green"
 
-stroke_by_age
+stroke_by_age +
+  theme(text = element_text(family = "Times New Roman"))
 ```
 
 
