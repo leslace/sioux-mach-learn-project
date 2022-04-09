@@ -69,6 +69,16 @@ count_by_smoke_status <- stroke_data %>%
   summarise( N = n())
 
 ```
+```{r}
+#testing the effect of work type
+ count_by_work_type <- stroke_data %>% 
+   select(work_type, stroke) %>% 
+   group_by(work_type, stroke) %>%
+   summarise( N = n())
+```
+
+
+```
 
 ```{r}
 #Boxplot on avg. glucose_level
