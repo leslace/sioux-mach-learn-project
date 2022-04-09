@@ -56,6 +56,8 @@ We hope that our feature can prevent serious health issues and motivate our user
 # Importing Data
 ````{r raw_data_view}
 stroke_data <- read_csv('./data/healthcare-dataset-stroke-data.csv')
+stroke_data$bmi <- as.numeric(stroke_data$bmi)
+stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
 
 stroke_data
 
@@ -118,10 +120,20 @@ count_by_marriage <- stroke_data %>%
 
 
 
-```
+
 
 ## Scatterplots
 ```{r scatterplots}
+stroke_data %>% 
+  ggplot(mapping = aes(x = bmi, y = age, color = stroke)) +
+  geom_point() +
+  geom_smooth(method = 'lm')
+
+stroke_data %>% 
+  filter(stroke == 1) %>%
+  ggplot(mapping = aes(x = bmi, y = age, color = smoking_status)) +
+  geom_point(method = 'lm') +
+  geom_smooth(method = 'lm')
 
 ```
 
@@ -159,6 +171,21 @@ stroke_by_age <- stroke_data %>%
 
 
 # Linear Model
+```{r}
+# qplot -> age/glucose level per stroke
+library(ggplot2)
+ qplot(y = age, x = avg_glucose_level,
+        data = stroke_data,
+        facets = ~ stroke)
+```
+```{r}
+# fitting models for simple regression model
+ lm.stroke <- lm(age ~ avg_glucose_level, data = stroke_data)
+ summary(lm.stroke)
+```
+
+```
+
 
 # Generalised Linear Model with family set to Poisson
 
