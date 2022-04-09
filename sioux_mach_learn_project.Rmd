@@ -167,7 +167,10 @@ stroke_by_age <- stroke_data %>%
 # dplyr::filter(stroke == 1) %>%
  ggplot(aes(x = stroke,
             y = age)) +
-  geom_boxplot()
+  geom_boxplot(color="orange", fill="yellow", alpha=0.2) +
+  ggtitle("Age by Stroke") + 
+  xlab("Stroke") + ylab("Age") +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 0))
 
 stroke_by_age
 ```
@@ -180,12 +183,28 @@ geom_boxplot()
 ```
 
 ```{r}
+stroke_by_bmi <- stroke_data %>%
+# dplyr::filter(stroke == 1) %>%
+ ggplot(aes(x = stroke,
+            y = bmi)) +
+  geom_boxplot(color="orange", fill="yellow", alpha=0.2) +
+  ggtitle("BMI by Stroke") + 
+  xlab("Stroke") + ylab("BMI") +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 0))
+stroke_by_bmi
+```
+
+
+```{r}
 #boxplot by avg_glucose_level and stroke
 stroke_by_avg_glucose_level <- stroke_data %>%
 # dplyr::filter(stroke == 1) %>%
  ggplot(aes(x = stroke,
             y = avg_glucose_level)) +
-  geom_boxplot()
+  geom_boxplot(color="orange", fill="yellow", alpha=0.2) +
+  ggtitle("Average Glucose Level by Stroke") + 
+  xlab("Stroke") + ylab("Avg. Glucose Level") +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 0))
 
 stroke_by_avg_glucose_level
 
