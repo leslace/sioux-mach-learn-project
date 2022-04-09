@@ -60,7 +60,7 @@ stroke_data <- read_csv('./data/healthcare-dataset-stroke-data.csv')
 stroke_data
 
 ````
-
+## Summaries
 ```{r}
 #testing the effect of non smokers and smokers
 count_by_smoke_status <- stroke_data %>% 
@@ -76,9 +76,47 @@ count_by_smoke_status <- stroke_data %>%
    group_by(work_type, stroke) %>%
    summarise( N = n())
 ```
+```{r}
+ # testing the effects of residence type
+count_by_Residence_type <- stroke_data %>% 
+   select(Residence_type, stroke) %>% 
+   group_by(Residence_type, stroke) %>%
+   summarise( N = n())
+```
+```{r}
+ # testing the effects of gender
+count_by_gender <- stroke_data %>% 
+   select(gender, stroke) %>% 
+   group_by(gender, stroke) %>%
+   summarise( N = n())
 
-## Summaries
-```{r summaries}
+```
+```{r}
+ # testing the effects of hypertension
+count_by_hypertension <- stroke_data %>% 
+   select(hypertension, stroke) %>% 
+   group_by(hypertension, stroke) %>%
+   summarise( N = n())
+
+```
+```{r}
+# testing the effects of heart disease
+count_by_heart_disease <- stroke_data %>% 
+   select(heart_disease, stroke) %>% 
+   group_by(heart_disease, stroke) %>%
+   summarise( N = n())
+```
+```{r}
+# testing the effects of marriage status
+count_by_marriage <- stroke_data %>% 
+   select(ever_married, stroke) %>% 
+   group_by(ever_married, stroke) %>%
+   summarise( N = n())
+```
+
+
+
+
 
 ```
 
