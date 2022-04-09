@@ -77,10 +77,19 @@ count_by_smoke_status <- stroke_data %>%
    summarise( N = n())
 ```
 
+## Summaries
+```{r summaries}
 
 ```
 
-```{r}
+## Scatterplots
+```{r scatterplots}
+
+```
+
+## Boxplots
+
+```{r boxplot_gluc}
 #Boxplot on avg. glucose_level
 
 ```
