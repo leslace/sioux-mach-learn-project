@@ -63,7 +63,11 @@ stroke_data
 
 ```{r}
 #testing the effect of non smokers and smokers
-boxplot(stroke ~ smoking_status, data =)
+stroke_data %>% 
+  select(smoking_status, stroke) %>%
+  group_by(smoking_status, stroke) %>%
+  summarise( N = n())
+
 ```
 
 # Methodology
