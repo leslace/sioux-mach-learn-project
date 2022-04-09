@@ -1,0 +1,223 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{hyperref}
+\usepackage{mathrsfs}
+\usepackage{amsmath,amscd}
+\usepackage[all,cmtip]{xy}
+\usepackage{bbm}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\newcommand*{\titleGM}{\begingroup
+	\hbox{
+		\hspace*{0.2\textwidth}
+		\rule{1pt}{\textheight}
+		\hspace*{0.05\textwidth}
+		\parbox[b]{0.75\textwidth}{
+			
+			{\noindent\LARGE\bfseries Applied Machine Learning and Predictive Modelling I: Modelling Stroke Data\\}\\[2\baselineskip]
+			{\large \textbf{Authors:} Larissa Eisele, Fabian Lüthard, Yves Maillard} \\[0.5\baselineskip]
+			{\large \textbf{Module:}   Applied Machine Learning and Predictive Modelling I} \\[4\baselineskip]
+			{\large Submitted on 10th of June, 2022 } \\[1\baselineskip]
+			{\large \textsc{ Supervisor: Matteo Tanadini and Daniel Meister }}
+			
+			\vspace{0.5\textheight}
+			{\noindent Lucerne University of Applied Sciences and Arts }\\[\baselineskip]
+	}}
+	\endgroup}
+
+\pagestyle{empty}
+\makeatletter
+\renewcommand{\maketitle}
+{ \begingroup \vskip 10pt \begin{center} \Huge {\bf \@title}
+		\vskip 10pt \large \@author \hskip 20pt \@date \end{center}
+	\vskip 10pt \endgroup \setcounter{footnote}{0} }
+\makeatother
+\renewcommand{\labelenumi}{(\alph{enumi})}
+
+\let\vaccent=\v
+\renewcommand{\v}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\gv}[1]{\ensuremath{\mbox{\boldmath$ #1 $}}}
+
+\newcommand{\uv}[1]{\ensuremath{\mathbf{\hat{#1}}}}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\avg}[1]{\left< #1 \right>}
+\let\underdot=\d
+\renewcommand{\d}[2]{\frac{d #1}{d #2}}
+\newcommand{\dd}[2]{\frac{d^2 #1}{d #2^2}}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+
+\newcommand{\pdd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+
+\let\baraccent=\=
+\renewcommand{\=}[1]{\stackrel{#1}{=}}
+\providecommand{\wave}[1]{\v{\tilde{#1}}}
+\providecommand{\fr}{\frac}
+\providecommand{\RR}{\mathbb{R}}
+\providecommand{\CC}{\mathbb{C}}
+\providecommand{\NN}{\mathbb{N}}
+\providecommand{\e}{\epsilon}
+\newcount\colveccount
+\newcommand*\colvec[1]{
+	\global\colveccount#1
+	\begin{pmatrix}
+		\colvecnext
+	}
+	\def\colvecnext#1{
+		#1
+		\global\advance\colveccount-1
+		\ifnum\colveccount>0
+		\\
+		\expandafter\colvecnext
+		\else
+	\end{pmatrix}
+	\fi
+}
+\newtheorem{prop}{Proposition}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{problem}{Problem}[section]
+\usepackage{cancel}
+\newtheorem*{lem}{Lemma}
+\theoremstyle{definition}
+\newtheorem*{dfn}{Definition}
+\theoremstyle{remark}
+\newtheorem*{rmk}{Remark}
+\newenvironment{solution}{
+	\begin{trivlist} \item \textit{Solution}. }{
+		\hspace*{\fill} $\blacksquare$\end{trivlist}}
+\pagestyle{myheadings}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{}
+\fancyfoot[R]{\thepage}
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+
+\thispagestyle{empty}
+\titleGM
+
+\renewcommand*\contentsname{Table of Contents}
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\fancyhead[LR]{}
+\pagenumbering{roman}
+
+\newpage
+\cleardoublepage
+\pagenumbering{arabic}
+\fancyhead[L]{Applied Machine Learning and Predictive Modelling: Stroke Data}
+\fancyhead[R]{MPM02}
+
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+\hypertarget{importing-data}{%
+\section{Importing Data}\label{importing-data}}
+
+\hypertarget{methodology}{%
+\section{Methodology}\label{methodology}}
+
+\hypertarget{linear-model}{%
+\section{Linear Model}\label{linear-model}}
+
+\hypertarget{generalised-linear-model-with-family-set-to-poisson}{%
+\section{Generalised Linear Model with family set to Poisson}\label{generalised-linear-model-with-family-set-to-poisson}}
+
+\hypertarget{generalised-linear-model-with-family-set-to-binomial}{%
+\section{Generalised Linear Model with family set to Binomial}\label{generalised-linear-model-with-family-set-to-binomial}}
+
+\hypertarget{generalised-additive-model}{%
+\section{Generalised Additive Model}\label{generalised-additive-model}}
+
+\hypertarget{neural-network}{%
+\section{Neural Network}\label{neural-network}}
+
+\hypertarget{support-vector-machine}{%
+\section{Support Vector Machine}\label{support-vector-machine}}
+
+\hypertarget{solve-an-optimisation-problem}{%
+\section{solve an optimisation problem}\label{solve-an-optimisation-problem}}
+
+\newpage
+
+\end{document}
