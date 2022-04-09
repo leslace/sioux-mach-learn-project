@@ -77,7 +77,7 @@ count_by_smoke_status <- stroke_data %>%
 ```{r}
 #Boxplot on Age
 ```
-
+test
 ```{r}
 #Boxplot on BMI
 ```
