@@ -48,7 +48,10 @@ package.check <- lapply(packages, FUN = function(x) {
 
 
 # Introduction
-
+Use case:
+We are a smart watch manufacturer working on a new feature for stroke prevention.
+We are going to analyze survey data that we plan to ask our users, complementing it with HR (Heart Rate) and CGM (Continuous Glucose Monitoring) data that our product already measures.
+We hope that our feature can prevent serious health issues and motivate our users to adopt healthier lifestyles.
 
 # Importing Data
 ````{r raw_data_view}
