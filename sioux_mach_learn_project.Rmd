@@ -165,9 +165,22 @@ stroke_by_age
 
 ```{r}
 #Boxplot on BMI
-#gplot(stroke_data, aes(y = bmi)) +
-#  geom_boxplot()
+ggplot(stroke_data, aes(y = bmi)) +
+geom_boxplot()
 ```
+
+```{r}
+#boxplot by avg_glucose_level and stroke
+stroke_by_avg_glucose_level <- stroke_data %>%
+# dplyr::filter(stroke == 1) %>%
+ ggplot(aes(x = stroke,
+            y = avg_glucose_level)) +
+  geom_boxplot()
+
+stroke_by_avg_glucose_level
+
+```
+
 
 # Methodology
 
