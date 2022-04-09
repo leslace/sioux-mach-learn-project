@@ -69,18 +69,17 @@ count_by_smoke_status <- stroke_data %>%
   summarise( N = n())
 
 ```
-```{r}
-#boxplot testing the effect of non smokers and smokers
-boxplot(N  ~ stroke + smoking_status, data = count_by_smoke_status)
-```
-```{r}
-#LE Testing testing the effect of non smokers and smokers
 
-
-boxplot(stroke  ~  count_by_smoke_status, data = count_by_smoke_status)
-```
 ```{r}
 #Boxplot on avg. glucose_level
+```
+
+```{r}
+#Boxplot on Age
+```
+
+```{r}
+#Boxplot on BMI
 ```
 
 # Methodology
