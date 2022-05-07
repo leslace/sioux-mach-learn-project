@@ -261,13 +261,13 @@ summary(glm.stroke)
 
 ```
 
-# Generalised Linear Model with family set to Binomial
+# Generalised Linear Model with family set to Binomial Fabian
 
-# Generalised Additive Model
+# Generalised Additive Model Fabian
 
-# Neural Network
+# Neural Network Yves 
 
-# Support Vector Machine
+# Support Vector Machine Larissa
 
 # solve an optimisation problem
 
