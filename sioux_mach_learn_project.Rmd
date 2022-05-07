@@ -250,6 +250,17 @@ summary(glm.stroke)
 ```
 
 
+```{r}
+glm.stroke <- glm(bmi ~ stroke,
+family = "poisson",
+data = stroke_data)
+summary(glm.stroke)
+```
+
+```{r}
+
+```
+
 # Generalised Linear Model with family set to Binomial
 
 # Generalised Additive Model
