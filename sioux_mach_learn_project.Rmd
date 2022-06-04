@@ -222,6 +222,25 @@ stroke_by_avg_glucose_level
 
 # Methodology
 
+```{r}
+set.seed(7406)
+n=dim(stroke_data[1])  # number of observations in dataset
+n_train=0.70*n  # training set is 70%
+flag = sort(sample(1:n, size=n_train, replace=FALSE))
+```
+```{r}
+# Use df (all data points without ID column) df_train, and df_test
+# Gender, hypertension, heart disease, ever married, work type, residence type, smoking status, and stroke are all factor types.
+# This should allow for the best modeling options possible for our methods.
+df_train = stroke_data[flag,]
+df_test = stroke_data[-flag,]
+```
+
+```{r}
+head(df_test)
+head(df_train)
+```
+
 
 # Linear Model
 ```{r}
