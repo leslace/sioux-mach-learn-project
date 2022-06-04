@@ -28,7 +28,7 @@ header-includes:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, messages = FALSE)
-packages <- c("dplyr","readxl", "curl", "ggplot2", "ggrepel", "maps", "plotly", "stringr", "tm", "wordcloud2", "tidyverse", "RColorBrewer", "ggwordcloud", "viridis", "bookdown", "utils", "leaps", "broom","GGally")
+packages <- c("dplyr","readxl", "curl", "ggplot2", "ggrepel", "maps", "plotly", "stringr", "tm", "wordcloud2", "tidyverse", "RColorBrewer", "ggwordcloud", "viridis", "bookdown", "utils", "leaps", "broom","GGally", "e1071", "caret")
 package.check <- lapply(packages, FUN = function(x) {
     if (!require(x, character.only = TRUE)) {
         install.packages(x, dependencies = TRUE)
@@ -54,8 +54,14 @@ We are going to analyze survey data that we plan to ask our users, complementing
 We hope that our feature can prevent serious health issues and motivate our users to adopt healthier lifestyles.
 
 # Importing Data
+
+
 ````{r raw_data_view}
 stroke_data <- read_csv('./data/healthcare-dataset-stroke-data.csv')
+s <- spec(stroke_data)
+s
+
+cols_condense(s)
 stroke_data$bmi <- as.numeric(stroke_data$bmi)
 stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
 stroke_data$stroke <- as.factor(stroke_data$stroke)
@@ -180,9 +186,10 @@ stroke_by_age <- stroke_data %>%
        y = "Age")
        color = "green"
 
-stroke_by_age +
-  theme(text = element_text(family = "Times New Roman"))
+stroke_by_age 
 ```
+
+
 
 
 ```{r}
@@ -270,10 +277,10 @@ summary(glm.stroke)
 
 
 ```{r}
-glm.stroke <- glm(bmi ~ stroke,
-family = "poisson",
-data = stroke_data)
-summary(glm.stroke)
+#glm.stroke <- glm(bmi ~ stroke,
+#family = "poisson",
+#data = stroke_data)
+#summary(glm.stroke)
 ```
 
 ```{r}
@@ -286,23 +293,39 @@ summary(glm.stroke)
 
 # Neural Network Yves 
 
-# Support Vector Machine Larissa
+# Support Vector Machine (Larissa)
 
-With SVM we want to classiy our data. 
-
-In the following we devide our data in a training and test set with a ratio of 80 (training) and 20 (test).
+Stroke Data Classification using a Support Vector Machine.
 
 ```{r}
-#Create a Training and testing data set
-set.seed(7406)
-n=dim(stroke_data[1])  # number of observations in dataset
-n_train=0.80*n  # training set is 80%
-flag = sort(sample(1:n, size=n_train, replace=FALSE))
+ytrain = df_train$stroke
+ytest = df_test$stroke
+```
+ 
+```{r}
+svm_model <- svm(stroke ~. , data = df_train, type = "C-classification", kernel = "radial", cost = "5")
+summary(svm_model)
+plot(svm_model, data = df_train, bmi ~ age, slice = list(avg_glucose_level = 3))
+```
+
+```{r}
+#svm_training_prediction <- predict(svm_model, newdata = df_train)
+#svm_training_error <- mean(svm_training_prediction != ytrain)
+#draw_confusion_matrix(confusionMatrix(svm_training_prediction,df_train$stroke), "Stroke", "No Stroke")
+#svm_training_error
+#confusionMatrix(svm_training_prediction,df_train$stroke)
 ```
 
 
+```{r}
+#svm_prediction <- predict(svm_model, newdata = df_test)
+#svm_test_error <- mean(svm_prediction != ytest)
+#draw_confusion_matrix(confusionMatrix(svm_prediction,df_test$stroke), "Stroke", "No Stroke")
+#svm_test_error
+```
 
-# solve an optimisation problem
+
+# OPTIONAL solve an optimisation problem
 
 
 \newpage
