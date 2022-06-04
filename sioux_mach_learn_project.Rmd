@@ -269,6 +269,20 @@ summary(glm.stroke)
 
 # Support Vector Machine Larissa
 
+With SVM we want to classiy our data. 
+
+In the following we devide our data in a training and test set with a ratio of 80 (training) and 20 (test).
+
+```{r}
+#Create a Training and testing data set
+set.seed(7406)
+n=dim(stroke_data[1])  # number of observations in dataset
+n_train=0.80*n  # training set is 80%
+flag = sort(sample(1:n, size=n_train, replace=FALSE))
+```
+
+
+
 # solve an optimisation problem
 
 
