@@ -64,7 +64,6 @@ s
 cols_condense(s)
 stroke_data$bmi <- as.numeric(stroke_data$bmi)
 stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
-stroke_data$stroke <- as.factor(stroke_data$stroke)
 stroke_data$age <- as.integer(stroke_data$age)
 stroke_data$smoking_status <- as.factor(stroke_data$smoking_status)
 stroke_data$work_type <- as.factor(stroke_data$work_type)
@@ -72,6 +71,7 @@ stroke_data$gender <- as.factor(stroke_data$gender)
 stroke_data$ever_married <- as.factor(stroke_data$ever_married)
 stroke_data$Residence_type <- as.factor(stroke_data$Residence_type)
 stroke_data$stroke_num <- as.numeric(stroke_data$stroke)
+stroke_data$stroke <- as.factor(stroke_data$stroke)
 
 
 stroke_data
