@@ -28,7 +28,7 @@ header-includes:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, messages = FALSE)
-packages <- c("dplyr","readxl", "curl", "ggplot2", "ggrepel", "maps", "plotly", "stringr", "tm", "wordcloud2", "tidyverse", "RColorBrewer", "ggwordcloud", "viridis", "bookdown", "utils", "leaps", "broom","GGally", "e1071", "caret")
+packages <- c("dplyr","readxl", "curl", "ggplot2", "ggrepel", "maps", "plotly", "stringr", "tm", "wordcloud2", "tidyverse", "RColorBrewer", "ggwordcloud", "viridis", "bookdown", "utils", "leaps", "broom","GGally", "e1071", "caret", "mgcv")
 package.check <- lapply(packages, FUN = function(x) {
     if (!require(x, character.only = TRUE)) {
         install.packages(x, dependencies = TRUE)
@@ -71,6 +71,7 @@ stroke_data$work_type <- as.factor(stroke_data$work_type)
 stroke_data$gender <- as.factor(stroke_data$gender)
 stroke_data$ever_married <- as.factor(stroke_data$ever_married)
 stroke_data$Residence_type <- as.factor(stroke_data$Residence_type)
+stroke_data$stroke_num <- as.numeric(stroke_data$stroke)
 
 
 stroke_data
