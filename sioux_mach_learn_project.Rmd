@@ -49,21 +49,25 @@ package.check <- lapply(packages, FUN = function(x) {
 
 # Introduction
 Use case:
-We are a smart watch manufacturer working on a new feature for stroke prevention.
+We are a smart watch manufacturer working on a new feature for stroke prevention. According to the World Health Organization (WHO) stroke is the 2nd leading cause of death globally, responsible for approximately 11% of total deaths.
 We are going to analyze survey data that we plan to ask our users, complementing it with HR (Heart Rate) and CGM (Continuous Glucose Monitoring) data that our product already measures.
 We hope that our feature can prevent serious health issues and motivate our users to adopt healthier lifestyles.
 
+We worked with a Stroke Prediction Data set from [@https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset].
+
+In the following document, different calculation and models  are used. The different models are intended to reflect both the teaching content from the course and the knowledge that the authors have gained during the learning process itself. 
+
+!! Hier evtl auch Schwierigkeit von Linear Models beschreiben??
+
 # Importing Data
 
+The first step was to research the relevant data. The data was imported into R. For simplicity, not all of the code is included. However, all code can be found in the original R Markdown file. 
 
 ````{r raw_data_view}
 stroke_data <- read_csv('./data/healthcare-dataset-stroke-data.csv')
-s <- spec(stroke_data)
-s
 
-cols_condense(s)
-stroke_data$bmi <- as.numeric(stroke_data$bmi)
-stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
+#stroke_data$bmi <- as.numeric(stroke_data$bmi)
+#stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
 stroke_data$age <- as.integer(stroke_data$age)
 stroke_data$smoking_status <- as.factor(stroke_data$smoking_status)
 stroke_data$work_type <- as.factor(stroke_data$work_type)
@@ -77,7 +81,55 @@ stroke_data$stroke <- as.factor(stroke_data$stroke)
 stroke_data
 
 ````
+
+# Data Cleaning
+
+The data has been prepared for an easier analysis and for fitting the models and calculations.
+
+```{r}
+head(stroke_data)
+```
+
+
+```{r}
+#rename parameter residence_type to lower case for stylistic purposes
+stroke_data <- stroke_data %>% rename("residence_type" = "Residence_type")
+```
+
+```{r}
+#check for the dimension of the data set
+dim(stroke_data)
+```
+
+The data set contains 201 missing values in "bmi". 
+
+```{r}
+#check for missing values
+colSums(is.na(stroke_data))
+```
+
+As the data set given is already quite small, we will replace the missing values with the mean "bmi" value. 
+
+```{r}
+#convert bmi as number and replace missing values with the mean value of bmi
+stroke_data$bmi <- as.numeric(stroke_data$bmi)
+stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
+```
+
+!!! Ich weiss nicht ob wir hier genauer testen sollen ob das sinnvoll ist, da Matteo im R-Bootcamp recht klar gesagt hat, das der Umgang mit missing values immer sehr kritisch ist und man daher die daten besser löscht als ersetzt. 
+
+
+
 ## Summaries
+
+
+```{r}
+#comparing gender with stroke
+stroke_by_gender = table(stroke_data$gender, stroke_data$stroke)
+names(dimnames(stroke_by_gender))<- c("Gender", "Stroke")
+stroke_by_gender
+```
+
 ```{r}
 #testing the effect of non smokers and smokers
 count_by_smoke_status <- stroke_data %>% 
@@ -95,9 +147,9 @@ count_by_smoke_status <- stroke_data %>%
 ```
 ```{r}
  # testing the effects of residence type
-count_by_Residence_type <- stroke_data %>% 
-   select(Residence_type, stroke) %>% 
-   group_by(Residence_type, stroke) %>%
+count_by_residence_type <- stroke_data %>% 
+   select(residence_type, stroke) %>% 
+   group_by(residence_type, stroke) %>%
    summarise( N = n())
 ```
 ```{r}
@@ -132,12 +184,9 @@ count_by_marriage <- stroke_data %>%
 ```
 
 
-
-
-
-
-
 ## Scatterplots
+
+
 ```{r scatterplots}
 stroke_data %>% 
   ggplot(mapping = aes(x = bmi, y = age, color = stroke)) +
@@ -189,7 +238,6 @@ stroke_by_age <- stroke_data %>%
 
 stroke_by_age 
 ```
-
 
 
 
@@ -287,10 +335,10 @@ library(ggplot2)
 ```
 ```{r}
 # fitting models for simple regression model
-lm.stroke <- lm(stroke_num ~ gender + age + hypertension + heart_disease + ever_married + work_type + Residence_type + avg_glucose_level + bmi + smoking_status , data = df_train_linear)
+lm.stroke <- lm(stroke_num ~ gender + age + hypertension + heart_disease + ever_married + work_type + residence_type + avg_glucose_level + bmi + smoking_status , data = df_train_linear)
 summary(lm.stroke)
  
-plot(stroke_num ~ gender + age + hypertension + heart_disease + ever_married + work_type + Residence_type + avg_glucose_level + bmi + smoking_status, data = df_train_linear)
+plot(stroke_num ~ gender + age + hypertension + heart_disease + ever_married + work_type + residence_type + avg_glucose_level + bmi + smoking_status, data = df_train_linear)
 abline(lm.stroke)
 ```
 
@@ -396,8 +444,8 @@ glm.stroke.binomial.2 <- glm(stroke_num ~ age + heart_disease + hypertension + a
 family = "binomial",
 data = df_train_linear)
 summary(glm.stroke.binomial.2)
-# plot(stroke ~ age + heart_disease + hypertension + avg_glucose_level, data = df_train_linear)
-# abline(glm.stroke.binomial.2)
+ plot(stroke ~ age + heart_disease + hypertension + avg_glucose_level, data = df_train_linear)
+ abline(glm.stroke.binomial.2)
 
 pred <- predict(glm.stroke.binomial.2)
 # pred
@@ -468,34 +516,92 @@ abline(gam.stroke)
 Stroke Data Classification using a Support Vector Machine.
 
 ```{r}
-ytrain = df_train$stroke
-ytest = df_test$stroke
+#create train and test data set for SVM Model with a split 70 (training) / 30 (test) 
+set.seed(7406)
+n=dim(stroke_data[1])  # number of observations in dataset
+n_train=0.70*n  # training set is 70%
+flag = sort(sample(1:n, size=n_train, replace=FALSE))
+```
+
+```{r}
+#use all parameters without first column id
+df_train_svm = stroke_data[flag,]
+df_test_svm = stroke_data[-flag,]
+```
+
+
+
+```{r}
+ytrain = df_train_svm$stroke
+ytest = df_test_svm$stroke
 ```
  
 ```{r}
-svm_model <- svm(stroke ~. , data = df_train, type = "C-classification", kernel = "radial", cost = "5")
+table(df_train_svm$stroke)
+```
+
+```{r}
+svm_model <- svm(stroke ~. , data = df_train_svm, type = "C-classification", kernel = "radial")
 summary(svm_model)
-plot(svm_model, data = df_train, bmi ~ age, slice = list(avg_glucose_level = 3))
+plot(svm_model, data = df_train_svm, bmi ~ age, slice = list(avg_glucose_level = 3))
 ```
 
+
 ```{r}
-svm_training_prediction <- predict(svm_model, newdata = df_train)
+#confusion matrix for training error
+svm_training_prediction <- predict(svm_model, newdata = df_train_svm)
 svm_training_error <- mean(svm_training_prediction != ytrain)
-draw_confusion_matrix(confusionMatrix(svm_training_prediction,df_train$stroke), "Stroke", "No Stroke")
-#svm_training_error
-#confusionMatrix(svm_training_prediction,df_train$stroke)
+confusionMatrix(svm_training_prediction, df_train_svm$stroke)
+svm_training_error
+confusionMatrix(svm_training_prediction,df_train_svm$stroke)
 ```
 
 
 ```{r}
-#svm_prediction <- predict(svm_model, newdata = df_test)
-#svm_test_error <- mean(svm_prediction != ytest)
-#draw_confusion_matrix(confusionMatrix(svm_prediction,df_test$stroke), "Stroke", "No Stroke")
-#svm_test_error
+#confusion matrix for test data
+svm_prediction <- predict(svm_model, newdata = df_test_svm)
+svm_test_error <- mean(svm_prediction != ytest)
+confusionMatrix(svm_prediction,df_test_svm$stroke)
+svm_test_error
 ```
 
+```{r}
+#tune parameters for svm
+set.seed(123)
+tuned_svm <- tune(svm, stroke ~ . , data = df_train_svm, ranges = list(epsilon = seq(0, 1, 0.1), cost = 2^(2:5)))
+tuned_svm
+```
+
+```{r}
+plot(tuned_svm)
+summary(tuned_svm)
+```
+
+```{r}
+svm_after_tuned <- tuned_svm$best.model
+summary(svm_after_tuned)
+```
+
+```{r}
+plot(svm_after_tuned, data = df_train_svm, bmi ~ age, slice = list(avg_glucose_level = 3))
+```
+
+```{r}
+# Confusion matrix after tuning hyperparameters
+svm_prediction_tuned <- predict(svm_after_tuned, newdata = df_test_svm)
+svm_tuned_test_error <- mean(svm_prediction_tuned != ytest)
+confusionMatrix(svm_prediction_tuned,df_test_svm$stroke)
+svm_tuned_test_error
+```
+
+```{r}
+confusionMatrix(svm_prediction_tuned,df_test_svm$stroke)
+```
+
+# Compare Models
 
 # OPTIONAL solve an optimisation problem
 
+# Conclusion
 
 \newpage
