@@ -43,7 +43,7 @@ package.check <- lapply(packages, FUN = function(x) {
 \newpage
 \cleardoublepage
 \pagenumbering{arabic}
-\fancyhead[L]{Applied Machine Learning and Predictive Modelling: Stroke Data}
+\fancyhead[L]{Applied Machine Learning and Predictive Modelling: Stroke Prediction}
 \fancyhead[R]{MPM02}
 
 
@@ -186,6 +186,7 @@ count_by_marriage <- stroke_data %>%
 
 ## Scatterplots
 
+With the following Scatterplots the strength of the relation between the various parameters should be visualized in more detail. These leads to a better understanding of the data. For the sake of simplicity we do not include all plots, the whole code can be found in the rmarkdown file.
 
 ```{r scatterplots}
 stroke_data %>% 
@@ -212,6 +213,8 @@ stroke_data %>%
 ```
 
 ## Boxplots
+
+With the following Boxplots the distribution of the data points is visualized Again, not all Boxplots are included. 
 
 ```{r boxplot_gluc}
 #Boxplot on avg. glucose_level
@@ -532,6 +535,7 @@ df_test_svm = stroke_data[-flag,]
 
 
 ```{r}
+#define stroke train and test variables
 ytrain = df_train_svm$stroke
 ytest = df_test_svm$stroke
 ```
@@ -539,9 +543,14 @@ ytest = df_test_svm$stroke
 ```{r}
 table(df_train_svm$stroke)
 ```
+```{r}
+#svm_model <- svm(stroke ~. , data = df_train_svm, kernel = "linear",scale = TRUE, cost = 10)
+#summary(svm_model)
+#plot(svm_model, data = df_train_svm, bmi ~ age, slice = list(avg_glucose_level = 3))
+```
 
 ```{r}
-svm_model <- svm(stroke ~. , data = df_train_svm, type = "C-classification", kernel = "radial")
+svm_model <- svm(stroke ~. , data = df_train_svm, type = "C-classification", kernel = "linear", )
 summary(svm_model)
 plot(svm_model, data = df_train_svm, bmi ~ age, slice = list(avg_glucose_level = 3))
 ```
@@ -593,8 +602,13 @@ svm_tuned_test_error <- mean(svm_prediction_tuned != ytest)
 confusionMatrix(svm_prediction_tuned,df_test_svm$stroke)
 svm_tuned_test_error
 ```
+```{r}
+#conf_matrix <- confusionMatrix(test_pred, test_truth)
+#conf_matrix
+```
 
 ```{r}
+#compare the tuned prediction with the test data 
 confusionMatrix(svm_prediction_tuned,df_test_svm$stroke)
 ```
 
