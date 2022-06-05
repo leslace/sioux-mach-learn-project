@@ -479,9 +479,9 @@ plot(svm_model, data = df_train, bmi ~ age, slice = list(avg_glucose_level = 3))
 ```
 
 ```{r}
-#svm_training_prediction <- predict(svm_model, newdata = df_train)
-#svm_training_error <- mean(svm_training_prediction != ytrain)
-#draw_confusion_matrix(confusionMatrix(svm_training_prediction,df_train$stroke), "Stroke", "No Stroke")
+svm_training_prediction <- predict(svm_model, newdata = df_train)
+svm_training_error <- mean(svm_training_prediction != ytrain)
+draw_confusion_matrix(confusionMatrix(svm_training_prediction,df_train$stroke), "Stroke", "No Stroke")
 #svm_training_error
 #confusionMatrix(svm_training_prediction,df_train$stroke)
 ```
