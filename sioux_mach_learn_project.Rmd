@@ -57,6 +57,8 @@ We worked with a Stroke Prediction Data set from [@https://www.kaggle.com/datase
 
 In the following document, different calculation and models  are used. The different models are intended to reflect both the teaching content from the course and the knowledge that the authors have gained during the learning process itself. 
 
+For the following work, different R packages have been used. The respective packages and their installation can be found in the original R Markdown file or the README. 
+
 !! Hier evtl auch Schwierigkeit von Linear Models beschreiben??
 
 # Importing Data
