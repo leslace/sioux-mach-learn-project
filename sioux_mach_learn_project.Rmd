@@ -49,9 +49,9 @@ package.check <- lapply(packages, FUN = function(x) {
 
 # Introduction
 Use case:
-We are a smart watch manufacturer working on a new feature for stroke prevention. According to the World Health Organization (WHO) stroke is the 2nd leading cause of death globally, responsible for approximately 11% of total deaths.
-We are going to analyze survey data that we plan to ask our users, complementing it with HR (Heart Rate) and CGM (Continuous Glucose Monitoring) data that our product already measures.
-We hope that our feature can prevent serious health issues and motivate our users to adopt healthier lifestyles.
+We are a smart watch manufacturer working on a new feature for stroke prevention. According to the World Health Organization (WHO) stroke is the 2nd leading cause of death globally, responsible for approximately 11% of total deaths. Therefore, our aim is to prevent stoke in future with the help of existing data and machine learning models. 
+
+In the following project we are going to analyze survey data that we plan to ask our users, complementing it with HR (Heart Rate) and CGM (Continuous Glucose Monitoring) data that our product already measures. We hope that our feature can prevent serious health issues and motivate our users to adopt healthier lifestyles.
 
 We worked with a Stroke Prediction Data set from [@https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset].
 
@@ -110,16 +110,13 @@ The data set contains 201 missing values in "bmi".
 colSums(is.na(stroke_data))
 ```
 
-As the data set given is already quite small, we will replace the missing values with the mean "bmi" value. 
+As the data set given is already quite small and the missing values also concern data from people who had a stoke, we will replace the missing values with the mean "bmi" value. 
 
 ```{r}
 #convert bmi as number and replace missing values with the mean value of bmi
 stroke_data$bmi <- as.numeric(stroke_data$bmi)
 stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
 ```
-
-!!! Ich weiss nicht ob wir hier genauer testen sollen ob das sinnvoll ist, da Matteo im R-Bootcamp recht klar gesagt hat, das der Umgang mit missing values immer sehr kritisch ist und man daher die daten besser löscht als ersetzt. 
-
 
 
 ## Summaries
