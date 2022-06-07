@@ -523,14 +523,13 @@ confusionMatrix(predicted.gam.stroke, df_test_linear$stroke)
 
 # Neural Network Yves 
 
-
-####################################
-
-# read the csv agein, because the data needs to be idfferently prepared than in other models
-
+```{r}
+# read the csv agein, because the data needs to be idfferently prepared than in other model
 stroke_data_nn <- read_csv('stroke.csv')
+```
 
-# have a look at the data -> it is discovered, that 
+```{r}
+# have a look at the data -> it is discovered, that bmi is not numeric, let's change that
 str(stroke_data_nn)
 
 stroke_data_nn[10] <- sapply(stroke_data_nn[10], as.numeric)
@@ -538,9 +537,9 @@ stroke_data_nn[10] <- sapply(stroke_data_nn[10], as.numeric)
 str(stroke_data_nn)
 
 install.packages("caret")
+```
 
-####################################
-
+```{r}
 # make a df with only numeric values
 numeric_var_original_scale <- stroke_data_nn %>% select(where(is.numeric) & !where(is.integer))
 
@@ -548,14 +547,17 @@ cat_var <- stroke_data_nn[,!(names(stroke_data_nn) %in% names(numeric_var_origin
 
 target_var= (stroke_data_nn %>% select(stroke)) %>% 
   mutate(stroke=as.factor(ifelse(stroke==0, "no_stroke","stroke" )))
+```
 
+```{r}
 # have a look at the structure of each df
 str(numeric_var)
 str(cat_var)
 str(target_var)
-####################################
+```
 
-#get parameters of center scale to use in train and unseen data
+```{r}
+#get parameters of center scale to use in train and unseen data with caret library
 
 library(caret)
 
@@ -563,44 +565,46 @@ preproc.param_comp <- numeric_var_original_scale  %>% preProcess(method = c("cen
 
 numeric_var <- preproc.param_comp %>% predict(numeric_var_original_scale)
 
-####################################
-
 predictors_var= cbind.data.frame(cat_var,numeric_var)
 
+```
+
+```{r}
 #now we have:
 head(target_var)
+```
 
-#head(predictors_var)
-
+```{r}
 #NA values are already solved, so lets see if some predictors have small variances:
-
 # Identify near zero variance predictors: remove_cols
 
 remove_cols <- nearZeroVar(numeric_var, names = TRUE, 
                            freqCut = 10, uniqueCut = 20)
 
 remove_cols
+```
+
+```{r}
 #lets see if some predictor have some high leverage point
-
 plot(numeric_var)
+```
 
-#it's ok for me
-
-### lets see correlation between variables
-
-#matrix
+```{r}
+#it's ok for me, lets see correlation between variables matrix
 numeric_varcor = numeric_var_original_scale
 names(numeric_varcor) = c("Age", "Avg. glucose level", "BMI")
 
 correlationMatrix1 <- round(cor(numeric_varcor),2) 
 
-####################################
+```
 
+```{r}
 highlyCorrelated <- findCorrelation(correlationMatrix1, cutoff=0.75) #useful for large matrices
 
 print(highlyCorrelated)
+```
 
-####################################
+```{r}
 library(GGally)
 
 corplot1 = ggpairs(numeric_varcor,diag=list(continuous= wrap("densityDiag",fill="palegreen1")),
@@ -618,8 +622,9 @@ test_data0 <- full_data[-train.index,]
 dim(train_data_imb)
 
 dim(test_data0)
+```
 
-####################################
+```{r}
 #Let's upsampling to balance the data 
 
 dummycar <- dummyVars(" ~ .", data=train_data_imb %>% select(-stroke))
@@ -643,11 +648,10 @@ table(train_data_imb_dummy$stroke)
 numInst= table(train_data_imb_dummy$stroke)[1]-table(train_data_imb_dummy$stroke)[2]
 
 mwmote1 <- mwmote(train_data_imb_dummy, numInstances = numInst,classAttr="stroke")
+```
 
-####################################
-
+```{r}
 #I will set the decimals in the categories to 0 or 1, otherwise the variables would be treated as continuous
-
 mwmote2=mwmote1 %>% select(-c(stroke,age,avg_glucose_level,bmi)) %>% 
   apply(2,  FUN=function(x) ifelse(x > 0.5, 1, 0) )
 
@@ -661,11 +665,11 @@ table(train_data$stroke)
 
 
 tune_grid_nnet= expand.grid(size = seq(from = 39, to = 42, by = 1), decay = c(0,0.1,0.5))
+```
 
-####################################
-
-
+```{r}
 #Create custom trainControl
+
 myControl <- trainControl(
   method = "repeatedcv", 
   number = 10,repeats=3,
@@ -673,37 +677,50 @@ myControl <- trainControl(
   classProbs = TRUE, search = "grid", 
   verboseIter = TRUE, savePredictions =TRUE)
 
+```
 
+```{r}
+# let's train the model -> can the up to 3 hours depending on your procesor
 install.packages('MLmetrics')
 
-# # lets train the model -> can the up to 3 hours depending on your procesor
 nnet_model <- train(
   stroke~.,
   data=train_data,
   method = "nnet",metric="F",
   trControl = myControl,
   tuneGrid = tune_grid_nnet	)
+```
 
-
+```{r}
 #lets have a look at the outcome
 nnet_model
+```
 
+```{r}
 #lets check to confusion matrix on test data
-
 prediction_nnet0= predict(nnet_model, test_data, type="prob")
 dim(prediction_nnet0)
+```
 
+```{r}
 # If p exceeds threshold of 0.5
 thresh_nnet = ifelse(prediction_nnet0[,"stroke"] > 0.5, "stroke","no_stroke")
+```
 
+```{r}
 # Convert to factor
 p_class_nnet =as.factor(thresh_nnet)
+```
 
-# Create confusion matrix
+```{r}
+# Create confusion matrix# as the matrix shows -> the model could reach an accuracy of 94.97% in previous runs
 conf_matrix_nnet= confusionMatrix(p_class_nnet , test_data[["stroke"]],positive = "stroke",mode = "everything")
 conf_matrix_nnet
+```
 
-# as the matrix shows -> the model can reach up to a 94.97 % accuracy
+
+
+
 
 ################################
 
