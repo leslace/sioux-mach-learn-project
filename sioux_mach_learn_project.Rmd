@@ -782,6 +782,11 @@ confusionMatrix(table(test_pred, testing$stroke))
 ```
 
 ```{r}
+plot(svm_linear, test_pred)
+```
+
+
+```{r}
 #define different values for c
 grid <- expand.grid(C = c(0, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2.5))
 ```
