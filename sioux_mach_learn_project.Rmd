@@ -523,9 +523,300 @@ confusionMatrix(predicted.gam.stroke, df_test_linear$stroke)
 
 # Neural Network Yves 
 
+```{r}
+# read the csv agein, because the data needs to be idfferently prepared than in other model
+stroke_data_nn <- read_csv('stroke.csv')
+```
+
+```{r}
+# have a look at the data -> it is discovered, that bmi is not numeric, let's change that
+str(stroke_data_nn)
+
+stroke_data_nn[10] <- sapply(stroke_data_nn[10], as.numeric)
+
+str(stroke_data_nn)
+
+install.packages("caret")
+```
+
+```{r}
+# make a df with only numeric values
+numeric_var_original_scale <- stroke_data_nn %>% select(where(is.numeric) & !where(is.integer))
+
+cat_var <- stroke_data_nn[,!(names(stroke_data_nn) %in% names(numeric_var_original_scale))] %>% select(-stroke)
+
+target_var= (stroke_data_nn %>% select(stroke)) %>% 
+  mutate(stroke=as.factor(ifelse(stroke==0, "no_stroke","stroke" )))
+```
+
+```{r}
+# have a look at the structure of each df
+str(numeric_var)
+str(cat_var)
+str(target_var)
+```
+
+```{r}
+#get parameters of center scale to use in train and unseen data with caret library
+
+library(caret)
+
+preproc.param_comp <- numeric_var_original_scale  %>% preProcess(method = c("center", "scale"))
+
+numeric_var <- preproc.param_comp %>% predict(numeric_var_original_scale)
+
+predictors_var= cbind.data.frame(cat_var,numeric_var)
+
+```
+
+```{r}
+#now we have:
+head(target_var)
+```
+
+```{r}
+#NA values are already solved, so lets see if some predictors have small variances:
+# Identify near zero variance predictors: remove_cols
+
+remove_cols <- nearZeroVar(numeric_var, names = TRUE, 
+                           freqCut = 10, uniqueCut = 20)
+
+remove_cols
+```
+
+```{r}
+#lets see if some predictor have some high leverage point
+plot(numeric_var)
+```
+
+```{r}
+#it's ok for me, lets see correlation between variables matrix
+numeric_varcor = numeric_var_original_scale
+names(numeric_varcor) = c("Age", "Avg. glucose level", "BMI")
+
+correlationMatrix1 <- round(cor(numeric_varcor),2) 
+
+```
+
+```{r}
+highlyCorrelated <- findCorrelation(correlationMatrix1, cutoff=0.75) #useful for large matrices
+
+print(highlyCorrelated)
+```
+
+```{r}
+library(GGally)
+
+corplot1 = ggpairs(numeric_varcor,diag=list(continuous= wrap("densityDiag",fill="palegreen1")),
+                   lower= list(continuous = wrap("points", color = "red", alpha = 0.5)))+theme_bw()
+
+full_data = cbind.data.frame(target_var, predictors_var)
+
+#70-30
+train.index <- createDataPartition(target_var$stroke, p = 0.7, list = FALSE)
+
+train_data_imb <- full_data[ train.index,]
+
+test_data0 <- full_data[-train.index,]
+
+dim(train_data_imb)
+
+dim(test_data0)
+```
+
+```{r}
+#Let's upsampling to balance the data 
+
+dummycar <- dummyVars(" ~ .", data=train_data_imb %>% select(-stroke))
+#train dummies
+train_data_imb_dummy <- cbind.data.frame(stroke= train_data_imb %>% select(stroke), 
+                                         predict(dummycar, newdata = train_data_imb %>% select(-stroke)))
+
+names(train_data_imb_dummy) <- make.names(names(train_data_imb_dummy), unique=TRUE)
+
+#test dummies
+test_data <- cbind.data.frame(stroke= test_data0 %>% select(stroke), 
+                              predict(dummycar, newdata = test_data0 %>% select(-stroke)))
+
+names(test_data) <- make.names(names(test_data), unique=TRUE)
+
+install.packages("imbalance")
+library(imbalance)
+print("Before upsampling")
+table(train_data_imb_dummy$stroke)
+
+numInst= table(train_data_imb_dummy$stroke)[1]-table(train_data_imb_dummy$stroke)[2]
+
+mwmote1 <- mwmote(train_data_imb_dummy, numInstances = numInst,classAttr="stroke")
+```
+
+```{r}
+#I will set the decimals in the categories to 0 or 1, otherwise the variables would be treated as continuous
+mwmote2=mwmote1 %>% select(-c(stroke,age,avg_glucose_level,bmi)) %>% 
+  apply(2,  FUN=function(x) ifelse(x > 0.5, 1, 0) )
+
+mwmote3=cbind.data.frame(stroke=mwmote1[["stroke"]], mwmote2 ,
+                         mwmote1 %>% select(age,avg_glucose_level,bmi ))
+
+train_data=rbind.data.frame(train_data_imb_dummy, mwmote3)
+
+print("After upsampling")
+table(train_data$stroke)
+
+
+tune_grid_nnet= expand.grid(size = seq(from = 39, to = 42, by = 1), decay = c(0,0.1,0.5))
+```
+
+```{r}
+#Create custom trainControl
+
+myControl <- trainControl(
+  method = "repeatedcv", 
+  number = 10,repeats=3,
+  summaryFunction = prSummary, #to include F1 score
+  classProbs = TRUE, search = "grid", 
+  verboseIter = TRUE, savePredictions =TRUE)
+
+```
+
+```{r}
+# let's train the model -> can the up to 3 hours depending on your procesor
+install.packages('MLmetrics')
+
+nnet_model <- train(
+  stroke~.,
+  data=train_data,
+  method = "nnet",metric="F",
+  trControl = myControl,
+  tuneGrid = tune_grid_nnet	)
+```
+
+```{r}
+#lets have a look at the outcome
+nnet_model
+```
+
+```{r}
+#lets check to confusion matrix on test data
+prediction_nnet0= predict(nnet_model, test_data, type="prob")
+dim(prediction_nnet0)
+```
+
+```{r}
+# If p exceeds threshold of 0.5
+thresh_nnet = ifelse(prediction_nnet0[,"stroke"] > 0.5, "stroke","no_stroke")
+```
+
+```{r}
+# Convert to factor
+p_class_nnet =as.factor(thresh_nnet)
+```
+
+```{r}
+# Create confusion matrix# as the matrix shows -> the model could reach an accuracy of 94.97% in previous runs
+conf_matrix_nnet= confusionMatrix(p_class_nnet , test_data[["stroke"]],positive = "stroke",mode = "everything")
+conf_matrix_nnet
+```
+
+
+
+
+
+################################
+
+
+
+
 # Support Vector Machine (Larissa)
 
-Stroke Data Classification using a Support Vector Machine.
+Stroke Data Classification using a Support Vector Machine. In the following two different approaches for the Stroke Data Classification are used. On one hand to compare the different approaches and on the other hand for the learning purpose. 
+
+In the following model "svm_linear" the SVM model is implemented with the caret package. Our target variable is the stroke parameter which contains 0 (no-stroke) and 1 (stroke) which we want to predict. The first step is to split the data set into training and testing data. The training data is used for building the model and the testing data for evaluating the model.
+
+
+```{r}
+#split the data into test and train data with a split of 70 (training) / 30 (testing)
+set.seed(7406)
+intrain <- createDataPartition(y = stroke_data$stroke, p = 0.7, list = FALSE)   #selecting our target variable "stroke"
+training <- stroke_data[intrain, ]
+testing <- stroke_data[-intrain, ]
+
+```
+
+```{r}
+#checking the dimension of the training and testing data set
+dim(training)
+dim(testing)
+```
+
+Implement the trainControl Method. This function will control the computation overheads which allow us to use the train function which is implemented by the caret package. In the following we use the trainControl function with the repeated cross-validation method, with a iteration of 10 and with repeates set to 3 to compute the repeated cross-validation 3 times.
+
+```{r}
+#implement the train control method with the repeated cross-validation method, 
+trctrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+```
+
+In the following we pass the trainControl function to our training method. In the train function we pass our target variable stroke and set the method to linear. The following output shows our train method. As our model was trained with the C value as one we now can predict our testing data set. 
+
+```{r message=FALSE, warning=FALSE}
+#implement the train function from caret
+svm_linear <- train(stroke ~., data = training, method = "svmLinear",
+                    trControl=trctrl,
+                    prepProcess = c("center", "scale"),
+                    tuneLenght = 10)
+svm_linear
+```
+
+When running our testing model we will get the prediction values with 0 (no-stroke) and 1 (stroke).
+
+```{r}
+#we use the predict function and pass the trained model 
+#and as new data we pass the testing data set
+test_pred <- predict(svm_linear, newdata = testing)
+test_pred
+```
+
+In the next step we are going to test the accuracy of our model. We do this with the help of the confusionMatrix. The following output shows, that our model has an accuracy of 95%. Which seems to be quite good. However for the sake of completness, we going to improve our model with customizing cost values.   
+
+```{r}
+#testing the accuracy of our model with confusionMatrix
+confusionMatrix(table(test_pred, testing$stroke))
+```
+
+```{r}
+#define different values for c
+grid <- expand.grid(C = c(0, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2.5))
+```
+
+The following output shows that the model shows the final value used for the model was C = 0.01.
+
+```{r message=FALSE, warning=FALSE}
+#improving the performance
+svm_linear_grid <- train(stroke ~., data = training, method = "svmLinear",
+                         trControl=trctrl,
+                         preProcess = c("center", "scale"),
+                         tuneGrid = grid,
+                         tuneLength = 10)
+
+svm_linear_grid
+```
+
+```{r}
+plot(svm_linear_grid)
+```
+
+```{r}
+test_pred_grid <- predict(svm_linear_grid, newdata = testing)
+test_pred_grid 
+```
+
+```{r}
+confusionMatrix(table(test_pred_grid, testing$stroke))
+```
+
+\newpage
+
+In the following the second approach for the SVM Model is presented. In a first step we again split the data set into training and testing data sets.
 
 ```{r}
 #create train and test data set for SVM Model with a split 70 (training) / 30 (test) 
@@ -564,6 +855,7 @@ summary(svm_model)
 plot(svm_model, data = df_train_svm, bmi ~ age, slice = list(avg_glucose_level = 3))
 ```
 
+In the following we checked the model fit with a confusion matrix with the help of the caret package's confusionMatrix() function. The following output shows an accuracy from 100%. 
 
 ```{r}
 #confusion matrix for training error
