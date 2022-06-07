@@ -441,7 +441,7 @@ Since we are essentially dealing with a classification issue, using logistic reg
 ```{r}
 # Include all variables to start variable selection
 # Plot all of them for visual analysis
-glm.stroke.binomial <- glm(stroke ~ age + gender + avg_glucose_level + Residence_type + work_type + heart_disease + hypertension + ever_married + bmi + smoking_status,
+glm.stroke.binomial <- glm(stroke ~ age + gender + avg_glucose_level + residence_type + work_type + heart_disease + hypertension + ever_married + bmi + smoking_status,
 family = "binomial",
 data = df_train_linear)
 summary(glm.stroke.binomial)
