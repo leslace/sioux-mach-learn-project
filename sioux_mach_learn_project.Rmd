@@ -441,7 +441,7 @@ Since we are essentially dealing with a classification issue, using logistic reg
 ```{r}
 # Include all variables to start variable selection
 # Plot all of them for visual analysis
-glm.stroke.binomial <- glm(stroke ~ age + gender + avg_glucose_level + Residence_type + work_type + heart_disease + hypertension + ever_married + bmi + smoking_status,
+glm.stroke.binomial <- glm(stroke ~ age + gender + avg_glucose_level + residence_type + work_type + heart_disease + hypertension + ever_married + bmi + smoking_status,
 family = "binomial",
 data = df_train_linear)
 summary(glm.stroke.binomial)
@@ -525,7 +525,94 @@ confusionMatrix(predicted.gam.stroke, df_test_linear$stroke)
 
 # Support Vector Machine (Larissa)
 
-Stroke Data Classification using a Support Vector Machine.
+Stroke Data Classification using a Support Vector Machine. In the following two different approaches for the Stroke Data Classification are used. On one hand to compare the different approaches and on the other hand for the learning purpose. 
+
+In the following model "svm_linear" the SVM model is implemented with the caret package. Our target variable is the stroke parameter which contains 0 (no-stroke) and 1 (stroke) which we want to predict. The first step is to split the data set into training and testing data. The training data is used for building the model and the testing data for evaluating the model.
+
+
+```{r}
+#split the data into test and train data with a split of 70 (training) / 30 (testing)
+set.seed(7406)
+intrain <- createDataPartition(y = stroke_data$stroke, p = 0.7, list = FALSE)   #selecting our target variable "stroke"
+training <- stroke_data[intrain, ]
+testing <- stroke_data[-intrain, ]
+
+```
+
+```{r}
+#checking the dimension of the training and testing data set
+dim(training)
+dim(testing)
+```
+
+Implement the trainControl Method. This function will control the computation overheads which allow us to use the train function which is implemented by the caret package. In the following we use the trainControl function with the repeated cross-validation method, with a iteration of 10 and with repeates set to 3 to compute the repeated cross-validation 3 times.
+
+```{r}
+#implement the train control method with the repeated cross-validation method, 
+trctrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+```
+
+In the following we pass the trainControl function to our training method. In the train function we pass our target variable stroke and set the method to linear. The following output shows our train method. As our model was trained with the C value as one we now can predict our testing data set. 
+
+```{r message=FALSE, warning=FALSE}
+#implement the train function from caret
+svm_linear <- train(stroke ~., data = training, method = "svmLinear",
+                    trControl=trctrl,
+                    prepProcess = c("center", "scale"),
+                    tuneLenght = 10)
+svm_linear
+```
+
+When running our testing model we will get the prediction values with 0 (no-stroke) and 1 (stroke).
+
+```{r}
+#we use the predict function and pass the trained model 
+#and as new data we pass the testing data set
+test_pred <- predict(svm_linear, newdata = testing)
+test_pred
+```
+
+In the next step we are going to test the accuracy of our model. We do this with the help of the confusionMatrix. The following output shows, that our model has an accuracy of 95%. Which seems to be quite good. However for the sake of completness, we going to improve our model with customizing cost values.   
+
+```{r}
+#testing the accuracy of our model with confusionMatrix
+confusionMatrix(table(test_pred, testing$stroke))
+```
+
+```{r}
+#define different values for c
+grid <- expand.grid(C = c(0, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2.5))
+```
+
+The following output shows that the model shows the final value used for the model was C = 0.01.
+
+```{r message=FALSE, warning=FALSE}
+#improving the performance
+svm_linear_grid <- train(stroke ~., data = training, method = "svmLinear",
+                         trControl=trctrl,
+                         preProcess = c("center", "scale"),
+                         tuneGrid = grid,
+                         tuneLength = 10)
+
+svm_linear_grid
+```
+
+```{r}
+plot(svm_linear_grid)
+```
+
+```{r}
+test_pred_grid <- predict(svm_linear_grid, newdata = testing)
+test_pred_grid 
+```
+
+```{r}
+confusionMatrix(table(test_pred_grid, testing$stroke))
+```
+
+\newpage
+
+In the following the second approach for the SVM Model is presented. In a first step we again split the data set into training and testing data sets.
 
 ```{r}
 #create train and test data set for SVM Model with a split 70 (training) / 30 (test) 
@@ -564,6 +651,7 @@ summary(svm_model)
 plot(svm_model, data = df_train_svm, bmi ~ age, slice = list(avg_glucose_level = 3))
 ```
 
+In the following we checked the model fit with a confusion matrix with the help of the caret package's confusionMatrix() function. The following output shows an accuracy from 100%. 
 
 ```{r}
 #confusion matrix for training error
