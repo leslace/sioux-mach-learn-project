@@ -322,10 +322,8 @@ head(df_train_linear)
 ```
 
 Our aim is to predict strokes, and the stroke variable is always our response variable of interest in this use case. However, simple or multiple linear regression is not the tool of choice, as stroke is a binary response variable. 
-Thus in the following we will nonetheless fit a linear regression model to our data with stroke as the response variable 
-We know of the following limitations for fitting a linear regression model to a binary response variable:
-- 
-- 
+Thus in the following we will nonetheless fit a linear regression model to our data with stroke as the response variable. However, out of all the linear methods, we will only focus on on a binomial model with family set to "binomial" in greater detail.
+
 ## Selecting Predictors for the model
 
 Apart from testing out individual variables, we also tested a model with all predictors to find out about the significant ones, as selecting all variables may not necessarily lead to a more accurate model, and we might run into overfitting problems. Furthermore, our variable selection is also informed by our exploratory plots above, and what we intuitively believe to be accurate risk factors for a stroke.
@@ -357,7 +355,7 @@ abline(lm.married)
 
 ```{r}
 # fitting models for simple regression model
-lm.stroke <- lm(stroke_num ~ age + hypertension + heart_disease + avg_glucose_level, data = df_train_linear)
+lm.stroke <- lm(stroke_num ~ age + hypertension + heart_disease * avg_glucose_level, data = df_train_linear)
 summary(lm.stroke)
  
 plot(stroke_num ~ age + hypertension + heart_disease + avg_glucose_level, data = df_train_linear)
