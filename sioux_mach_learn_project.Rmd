@@ -523,6 +523,193 @@ confusionMatrix(predicted.gam.stroke, df_test_linear$stroke)
 
 # Neural Network Yves 
 
+
+####################################
+
+# read the csv agein, because the data needs to be idfferently prepared than in other models
+
+stroke_data_nn <- read_csv('stroke.csv')
+
+# have a look at the data -> it is discovered, that 
+str(stroke_data_nn)
+
+stroke_data_nn[10] <- sapply(stroke_data_nn[10], as.numeric)
+
+str(stroke_data_nn)
+
+install.packages("caret")
+
+####################################
+
+# make a df with only numeric values
+numeric_var_original_scale <- stroke_data_nn %>% select(where(is.numeric) & !where(is.integer))
+
+cat_var <- stroke_data_nn[,!(names(stroke_data_nn) %in% names(numeric_var_original_scale))] %>% select(-stroke)
+
+target_var= (stroke_data_nn %>% select(stroke)) %>% 
+  mutate(stroke=as.factor(ifelse(stroke==0, "no_stroke","stroke" )))
+
+# have a look at the structure of each df
+str(numeric_var)
+str(cat_var)
+str(target_var)
+####################################
+
+#get parameters of center scale to use in train and unseen data
+
+library(caret)
+
+preproc.param_comp <- numeric_var_original_scale  %>% preProcess(method = c("center", "scale"))
+
+numeric_var <- preproc.param_comp %>% predict(numeric_var_original_scale)
+
+####################################
+
+predictors_var= cbind.data.frame(cat_var,numeric_var)
+
+#now we have:
+head(target_var)
+
+#head(predictors_var)
+
+#NA values are already solved, so lets see if some predictors have small variances:
+
+# Identify near zero variance predictors: remove_cols
+
+remove_cols <- nearZeroVar(numeric_var, names = TRUE, 
+                           freqCut = 10, uniqueCut = 20)
+
+remove_cols
+#lets see if some predictor have some high leverage point
+
+plot(numeric_var)
+
+#it's ok for me
+
+### lets see correlation between variables
+
+#matrix
+numeric_varcor = numeric_var_original_scale
+names(numeric_varcor) = c("Age", "Avg. glucose level", "BMI")
+
+correlationMatrix1 <- round(cor(numeric_varcor),2) 
+
+####################################
+
+highlyCorrelated <- findCorrelation(correlationMatrix1, cutoff=0.75) #useful for large matrices
+
+print(highlyCorrelated)
+
+####################################
+library(GGally)
+
+corplot1 = ggpairs(numeric_varcor,diag=list(continuous= wrap("densityDiag",fill="palegreen1")),
+                   lower= list(continuous = wrap("points", color = "red", alpha = 0.5)))+theme_bw()
+
+full_data = cbind.data.frame(target_var, predictors_var)
+
+#70-30
+train.index <- createDataPartition(target_var$stroke, p = 0.7, list = FALSE)
+
+train_data_imb <- full_data[ train.index,]
+
+test_data0 <- full_data[-train.index,]
+
+dim(train_data_imb)
+
+dim(test_data0)
+
+####################################
+#Let's upsampling to balance the data 
+
+dummycar <- dummyVars(" ~ .", data=train_data_imb %>% select(-stroke))
+#train dummies
+train_data_imb_dummy <- cbind.data.frame(stroke= train_data_imb %>% select(stroke), 
+                                         predict(dummycar, newdata = train_data_imb %>% select(-stroke)))
+
+names(train_data_imb_dummy) <- make.names(names(train_data_imb_dummy), unique=TRUE)
+
+#test dummies
+test_data <- cbind.data.frame(stroke= test_data0 %>% select(stroke), 
+                              predict(dummycar, newdata = test_data0 %>% select(-stroke)))
+
+names(test_data) <- make.names(names(test_data), unique=TRUE)
+
+install.packages("imbalance")
+library(imbalance)
+print("Before upsampling")
+table(train_data_imb_dummy$stroke)
+
+numInst= table(train_data_imb_dummy$stroke)[1]-table(train_data_imb_dummy$stroke)[2]
+
+mwmote1 <- mwmote(train_data_imb_dummy, numInstances = numInst,classAttr="stroke")
+
+####################################
+
+#I will set the decimals in the categories to 0 or 1, otherwise the variables would be treated as continuous
+
+mwmote2=mwmote1 %>% select(-c(stroke,age,avg_glucose_level,bmi)) %>% 
+  apply(2,  FUN=function(x) ifelse(x > 0.5, 1, 0) )
+
+mwmote3=cbind.data.frame(stroke=mwmote1[["stroke"]], mwmote2 ,
+                         mwmote1 %>% select(age,avg_glucose_level,bmi ))
+
+train_data=rbind.data.frame(train_data_imb_dummy, mwmote3)
+
+print("After upsampling")
+table(train_data$stroke)
+
+
+tune_grid_nnet= expand.grid(size = seq(from = 39, to = 42, by = 1), decay = c(0,0.1,0.5))
+
+####################################
+
+
+#Create custom trainControl
+myControl <- trainControl(
+  method = "repeatedcv", 
+  number = 10,repeats=3,
+  summaryFunction = prSummary, #to include F1 score
+  classProbs = TRUE, search = "grid", 
+  verboseIter = TRUE, savePredictions =TRUE)
+
+
+install.packages('MLmetrics')
+
+# # lets train the model -> can the up to 3 hours depending on your procesor
+nnet_model <- train(
+  stroke~.,
+  data=train_data,
+  method = "nnet",metric="F",
+  trControl = myControl,
+  tuneGrid = tune_grid_nnet	)
+
+
+#lets have a look at the outcome
+nnet_model
+
+#lets check to confusion matrix on test data
+
+prediction_nnet0= predict(nnet_model, test_data, type="prob")
+dim(prediction_nnet0)
+
+# If p exceeds threshold of 0.5
+thresh_nnet = ifelse(prediction_nnet0[,"stroke"] > 0.5, "stroke","no_stroke")
+
+# Convert to factor
+p_class_nnet =as.factor(thresh_nnet)
+
+# Create confusion matrix
+conf_matrix_nnet= confusionMatrix(p_class_nnet , test_data[["stroke"]],positive = "stroke",mode = "everything")
+conf_matrix_nnet
+
+# as the matrix shows -> the model can reach up to a 94.97 % accuracy
+
+################################
+
+
+
+
 # Support Vector Machine (Larissa)
 
 Stroke Data Classification using a Support Vector Machine. In the following two different approaches for the Stroke Data Classification are used. On one hand to compare the different approaches and on the other hand for the learning purpose. 
