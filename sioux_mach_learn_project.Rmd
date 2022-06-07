@@ -321,7 +321,7 @@ head(df_test_linear)
 head(df_train_linear)
 ```
 
-Our aim is to predict strokes, and the stroke variable is always our response variable of interest. However, simple or multiple linear regression is not the tool of choice, as stroke is a binary / categorical response variable. 
+Our aim is to predict strokes, and the stroke variable is always our response variable of interest in this use case. However, simple or multiple linear regression is not the tool of choice, as stroke is a binary response variable. 
 Thus in the following we will nonetheless fit a linear regression model to our data with stroke as the response variable 
 We know of the following limitations for fitting a linear regression model to a binary response variable:
 - 
