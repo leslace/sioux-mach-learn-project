@@ -448,6 +448,8 @@ summary(glm.stroke.binomial)
 ```{r}
 prediction.glm <- predict(glm.stroke.binomial, df_test_linear, type = "response")
 # InformationValue::optimalCutoff(df_test_linear, prediction.glm)
+
+str(prediction.glm)
 ```
 
 ```{r}
@@ -523,7 +525,7 @@ confusionMatrix(predicted.gam.stroke, df_test_linear$stroke)
 
 ```{r}
 # read the csv agein, because the data needs to be idfferently prepared than in other model
-stroke_data_nn <- read_csv('stroke.csv')
+stroke_data_nn <- read_csv('./data/healthcare-dataset-stroke-data.csv')
 ```
 
 ```{r}
@@ -534,7 +536,7 @@ stroke_data_nn[10] <- sapply(stroke_data_nn[10], as.numeric)
 
 str(stroke_data_nn)
 
-install.packages("caret")
+#install.packages("caret")
 ```
 
 ```{r}
