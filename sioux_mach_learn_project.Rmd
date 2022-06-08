@@ -28,7 +28,7 @@ header-includes:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, messages = FALSE)
-packages <- c("dplyr","readxl", "curl", "ggplot2", "ggrepel", "maps", "plotly", "stringr", "tm", "wordcloud2", "tidyverse", "RColorBrewer", "ggwordcloud", "viridis", "bookdown", "utils", "leaps", "broom","GGally", "e1071", "caret", "mgcv")
+packages <- c("dplyr","readxl", "curl", "ggplot2", "ggrepel", "maps", "plotly", "stringr", "tm", "wordcloud2", "tidyverse", "RColorBrewer", "ggwordcloud", "viridis", "bookdown", "utils", "leaps", "broom","GGally", "e1071", "caret", "mgcv", "imbalance", "MLmetrics")
 package.check <- lapply(packages, FUN = function(x) {
     if (!require(x, character.only = TRUE)) {
         install.packages(x, dependencies = TRUE)
@@ -61,15 +61,14 @@ For the following work, different R packages have been used. The respective pack
 
 !! Hier evtl auch Schwierigkeit von Linear Models beschreiben??
 
-# Importing Data
+# Importing Data and Change Type of Parameters
 
 The first step was to research the relevant data. The data was imported into R. For simplicity, not all of the code is included. However, all code can be found in the original R Markdown file. 
 
-````{r raw_data_view}
+
+```{r}
 stroke_data <- read_csv('./data/healthcare-dataset-stroke-data.csv')
 
-#stroke_data$bmi <- as.numeric(stroke_data$bmi)
-#stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
 stroke_data$age <- as.integer(stroke_data$age)
 stroke_data$smoking_status <- as.factor(stroke_data$smoking_status)
 stroke_data$work_type <- as.factor(stroke_data$work_type)
@@ -79,12 +78,11 @@ stroke_data$Residence_type <- as.factor(stroke_data$Residence_type)
 stroke_data$stroke_num <- as.numeric(stroke_data$stroke)
 stroke_data$stroke <- as.factor(stroke_data$stroke)
 
-
 stroke_data
+```
 
-````
 
-# Data Cleaning
+# Data Cleaning and Exploratory Data Analysis
 
 The data has been prepared for an easier analysis and for fitting the models and calculations.
 
@@ -112,7 +110,7 @@ colSums(is.na(stroke_data))
 
 As the data set given is already quite small and the missing values also concern data from people who had a stoke, we will replace the missing values with the mean "bmi" value. 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 #convert bmi as number and replace missing values with the mean value of bmi
 stroke_data$bmi <- as.numeric(stroke_data$bmi)
 stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
@@ -121,6 +119,7 @@ stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
 
 ## Summaries
 
+In the following chapter, the different variables are summarized by no-stroke (0) and stroke (1). Please note that not all code is included in the PDF, the full code can be found in the rmarkdown. 
 
 ```{r}
 #comparing gender with stroke
@@ -129,7 +128,8 @@ names(dimnames(stroke_by_gender))<- c("Gender", "Stroke")
 stroke_by_gender
 ```
 
-```{r}
+
+```{r include=FALSE}
 #testing the effect of non smokers and smokers
 count_by_smoke_status <- stroke_data %>% 
   select(smoking_status, stroke) %>%
@@ -187,12 +187,18 @@ count_by_marriage <- stroke_data %>%
 
 With the following Scatterplots the strength of the relation between the various parameters should be visualized in more detail. These leads to a better understanding of the data. For the sake of simplicity we do not include all plots, the whole code can be found in the rmarkdown file.
 
-```{r scatterplots}
+
+The following scatterplots shows a positive correlation between stroke (1) and age as with stroke (1) and bmi. For bmi there seems to be too many outliers to see a correlation with stroke (1).
+
+```{r}
 stroke_data %>% 
   ggplot(mapping = aes(x = bmi, y = age, color = stroke)) +
   geom_point() +
   geom_smooth(method = 'lm')
+```
 
+
+```{r scatterplots, include=FALSE}
 stroke_data %>% 
   filter(stroke == 1) %>%
   ggplot(mapping = aes(x = bmi, y = age, color = smoking_status)) +
@@ -213,41 +219,44 @@ stroke_data %>%
 
 ## Boxplots
 
-With the following Boxplots the distribution of the data points is visualized Again, not all Boxplots are included. 
+With the following Boxplots the distribution of the data points is visualized. Again, not all Boxplots are included. 
 
-```{r boxplot_gluc}
+
+```{r boxplot_gluc, include=FALSE}
 #Boxplot on avg. glucose_level
 ggplot(stroke_data, aes(y = avg_glucose_level)) +
   geom_boxplot()
 ```
 
-```{r}
+```{r include=FALSE}
 #Boxplot on Age 
 ggplot(stroke_data, aes(y = age)) +
   geom_boxplot() 
 ```
 
-```{r}
+The following boxplot visualizes the distribution no-Stroke (0) and Stroke (1) by Age. As we can see the median Age for people suffering a Stroke is higher and is around 76 years old. Also the Distribution besides a few outliers is smaller. 
+
+```{r echo=TRUE}
 stroke_by_age <- stroke_data %>%
 # dplyr::filter(stroke == 1) %>%
  ggplot(aes(x = stroke,
             y = age)) +
-  geom_boxplot() +
-  labs(title = "Boxplot on no-Stroke (0) and Stroke (1) by Age",
-       x = "No-stroke (0) and Stroke (1)",
-       y = "Age")
-       color = "green"
-
+  geom_boxplot(color="orange", fill="yellow", alpha=0.2) +
+  ggtitle("Boxplot on no−Stroke (0) and Stroke (1) by Age") + 
+  xlab("Stroke") + ylab("Age") +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 0)) 
 stroke_by_age 
 ```
 
 
 
-```{r}
+```{r include=FALSE}
 #Boxplot on BMI
 ggplot(stroke_data, aes(y = bmi)) +
 geom_boxplot()
 ```
+
+In the following the distribution of the bmi by no-Stroke (0) and Stroke (1) is shown. As we can see the Median of the two variables are nearly the same around 26. For the people with no-Stroke (0) the distribution of the bmi's is higher. There seems to be a lot of outliers with an high bmi.  
 
 ```{r}
 stroke_by_bmi <- stroke_data %>%
@@ -262,7 +271,7 @@ stroke_by_bmi
 ```
 
 
-```{r}
+```{r include=FALSE}
 #boxplot by avg_glucose_level and stroke
 stroke_by_avg_glucose_level <- stroke_data %>%
 # dplyr::filter(stroke == 1) %>%
@@ -525,11 +534,8 @@ confusionMatrix(predicted.gam.stroke, df_test_linear$stroke)
 
 ```{r}
 # read the csv agein, because the data needs to be idfferently prepared than in other model
-<<<<<<< Updated upstream
 stroke_data_nn <- read_csv('./data/healthcare-dataset-stroke-data.csv')
-=======
-stroke_data_nn <- read_csv('healthcare-dataset-stroke-data.csv')
->>>>>>> Stashed changes
+
 ```
 
 ```{r}
@@ -545,12 +551,12 @@ str(stroke_data_nn)
 
 ```{r}
 # make a df with only numeric values
-numeric_var_original_scale <- stroke_data_nn %>% select(where(is.numeric) & !where(is.integer))
+#numeric_var_original_scale <- stroke_data_nn %>% select(where(is.numeric) & !where(is.integer))
 
-cat_var <- stroke_data_nn[,!(names(stroke_data_nn) %in% names(numeric_var_original_scale))] %>% select(-stroke)
+#cat_var <- stroke_data_nn[,!(names(stroke_data_nn) %in% names(numeric_var_original_scale))] %>% select(-stroke)
 
-target_var= (stroke_data_nn %>% select(stroke)) %>% 
-  mutate(stroke=as.factor(ifelse(stroke==0, "no_stroke","stroke" )))
+#target_var= (stroke_data_nn %>% select(stroke)) %>% 
+#  mutate(stroke=as.factor(ifelse(stroke==0, "no_stroke","stroke" )))
 ```
 
 ```{r}
@@ -563,112 +569,112 @@ target_var= (stroke_data_nn %>% select(stroke)) %>%
 ```{r}
 #get parameters of center scale to use in train and unseen data with caret library
 
-library(caret)
+#library(caret)
 
-preproc.param_comp <- numeric_var_original_scale  %>% preProcess(method = c("center", "scale"))
+#preproc.param_comp <- numeric_var_original_scale  %>% preProcess(method = c("center", "scale"))
 
-numeric_var <- preproc.param_comp %>% predict(numeric_var_original_scale)
+#numeric_var <- preproc.param_comp %>% predict(numeric_var_original_scale)
 
-predictors_var= cbind.data.frame(cat_var,numeric_var)
+#predictors_var= cbind.data.frame(cat_var,numeric_var)
 
 ```
 
 ```{r}
 #now we have:
-head(target_var)
+#head(target_var)
 ```
 
 ```{r}
 #NA values are already solved, so lets see if some predictors have small variances:
 # Identify near zero variance predictors: remove_cols
 
-remove_cols <- nearZeroVar(numeric_var, names = TRUE, 
-                           freqCut = 10, uniqueCut = 20)
+#remove_cols <- nearZeroVar(numeric_var, names = TRUE, 
+#                           freqCut = 10, uniqueCut = 20)
 
-remove_cols
+#remove_cols
 ```
 
 ```{r}
 #lets see if some predictor have some high leverage point
-plot(numeric_var)
+#plot(numeric_var)
 ```
 
 ```{r}
 #it's ok for me, lets see correlation between variables matrix
-numeric_varcor = numeric_var_original_scale
-names(numeric_varcor) = c("Age", "Avg. glucose level", "BMI")
+#numeric_varcor = numeric_var_original_scale
+#names(numeric_varcor) = c("Age", "Avg. glucose level", "BMI")
 
-correlationMatrix1 <- round(cor(numeric_varcor),2) 
+#correlationMatrix1 <- round(cor(numeric_varcor),2) 
 
 ```
 
 ```{r}
-highlyCorrelated <- findCorrelation(correlationMatrix1, cutoff=0.75) #useful for large matrices
+#highlyCorrelated <- findCorrelation(correlationMatrix1, cutoff=0.75) #useful for large matrices
 
-print(highlyCorrelated)
+#print(highlyCorrelated)
 ```
 
 ```{r}
-library(GGally)
+#library(GGally)
 
-corplot1 = ggpairs(numeric_varcor,diag=list(continuous= wrap("densityDiag",fill="palegreen1")),
-                   lower= list(continuous = wrap("points", color = "red", alpha = 0.5)))+theme_bw()
+#corplot1 = ggpairs(numeric_varcor,diag=list(continuous= wrap("densityDiag",fill="palegreen1")),
+#                   lower= list(continuous = wrap("points", color = "red", alpha = 0.5)))+theme_bw()
 
-full_data = cbind.data.frame(target_var, predictors_var)
+#full_data = cbind.data.frame(target_var, predictors_var)
 
 #70-30
-train.index <- createDataPartition(target_var$stroke, p = 0.7, list = FALSE)
+#train.index <- createDataPartition(target_var$stroke, p = 0.7, list = FALSE)
 
-train_data_imb <- full_data[ train.index,]
+#train_data_imb <- full_data[ train.index,]
 
-test_data0 <- full_data[-train.index,]
+#test_data0 <- full_data[-train.index,]
 
-dim(train_data_imb)
+#dim(train_data_imb)
 
-dim(test_data0)
+#dim(test_data0)
 ```
 
 ```{r}
 #Let's upsampling to balance the data 
 
-dummycar <- dummyVars(" ~ .", data=train_data_imb %>% select(-stroke))
+#dummycar <- dummyVars(" ~ .", data=train_data_imb %>% select(-stroke))
 #train dummies
-train_data_imb_dummy <- cbind.data.frame(stroke= train_data_imb %>% select(stroke), 
-                                         predict(dummycar, newdata = train_data_imb %>% select(-stroke)))
+#train_data_imb_dummy <- cbind.data.frame(stroke= train_data_imb %>% select(stroke), 
+#                                         predict(dummycar, newdata = train_data_imb %>% select(-stroke)))
 
-names(train_data_imb_dummy) <- make.names(names(train_data_imb_dummy), unique=TRUE)
+#names(train_data_imb_dummy) <- make.names(names(train_data_imb_dummy), unique=TRUE)
 
 #test dummies
-test_data <- cbind.data.frame(stroke= test_data0 %>% select(stroke), 
-                              predict(dummycar, newdata = test_data0 %>% select(-stroke)))
+#test_data <- cbind.data.frame(stroke= test_data0 %>% select(stroke), 
+#                              predict(dummycar, newdata = test_data0 %>% #select(-stroke)))
 
-names(test_data) <- make.names(names(test_data), unique=TRUE)
+#names(test_data) <- make.names(names(test_data), unique=TRUE)
 
-install.packages("imbalance")
-library(imbalance)
-print("Before upsampling")
-table(train_data_imb_dummy$stroke)
+#install.packages("imbalance")
+#library(imbalance)
+#print("Before upsampling")
+#table(train_data_imb_dummy$stroke)
 
-numInst= table(train_data_imb_dummy$stroke)[1]-table(train_data_imb_dummy$stroke)[2]
+#numInst= table(train_data_imb_dummy$stroke)[1]-table(train_data_imb_dummy$stroke)[2]
 
-mwmote1 <- mwmote(train_data_imb_dummy, numInstances = numInst,classAttr="stroke")
+#mwmote1 <- mwmote(train_data_imb_dummy, numInstances = numInst,classAttr="stroke")
 ```
 
 ```{r}
 #I will set the decimals in the categories to 0 or 1, otherwise the variables would be treated as continuous
-mwmote2=mwmote1 %>% select(-c(stroke,age,avg_glucose_level,bmi)) %>% 
-  apply(2,  FUN=function(x) ifelse(x > 0.5, 1, 0) )
+#mwmote2=mwmote1 %>% select(-c(stroke,age,avg_glucose_level,bmi)) %>% 
+ # apply(2,  FUN=function(x) ifelse(x > 0.5, 1, 0) )
 
-mwmote3=cbind.data.frame(stroke=mwmote1[["stroke"]], mwmote2 ,
-                         mwmote1 %>% select(age,avg_glucose_level,bmi ))
+#mwmote3=cbind.data.frame(stroke=mwmote1[["stroke"]], mwmote2 ,
+ #                        mwmote1 %>% select(age,avg_glucose_level,bmi ))
 
-train_data=rbind.data.frame(train_data_imb_dummy, mwmote3)
+#train_data=rbind.data.frame(train_data_imb_dummy, mwmote3)
 
-print("After upsampling")
-table(train_data$stroke)
+#print("After upsampling")
+#table(train_data$stroke)
 
 
-tune_grid_nnet= expand.grid(size = seq(from = 39, to = 42, by = 1), decay = c(0,0.1,0.5))
+#tune_grid_nnet= expand.grid(size = seq(from = 39, to = 42, by = 1), decay = c(0,0.1,0.5))
 ```
 
 ```{r}
@@ -685,41 +691,41 @@ myControl <- trainControl(
 
 ```{r}
 # let's train the model -> can the up to 3 hours depending on your procesor
-install.packages('MLmetrics')
+#install.packages('MLmetrics')
 
-nnet_model <- train(
-  stroke~.,
-  data=train_data,
-  method = "nnet",metric="F",
-  trControl = myControl,
-  tuneGrid = tune_grid_nnet	)
+#nnet_model <- train(
+#  stroke~.,
+#  data=train_data,
+#  method = "nnet",metric="F",
+#  trControl = myControl,
+#  tuneGrid = tune_grid_nnet	)
 ```
 
 ```{r}
 #lets have a look at the outcome
-nnet_model
+#nnet_model
 ```
 
 ```{r}
 #lets check to confusion matrix on test data
-prediction_nnet0= predict(nnet_model, test_data, type="prob")
-dim(prediction_nnet0)
+#prediction_nnet0= predict(nnet_model, test_data, type="prob")
+#dim(prediction_nnet0)
 ```
 
 ```{r}
 # If p exceeds threshold of 0.5
-thresh_nnet = ifelse(prediction_nnet0[,"stroke"] > 0.5, "stroke","no_stroke")
+#thresh_nnet = ifelse(prediction_nnet0[,"stroke"] > 0.5, "stroke","no_stroke")
 ```
 
 ```{r}
 # Convert to factor
-p_class_nnet =as.factor(thresh_nnet)
+#p_class_nnet =as.factor(thresh_nnet)
 ```
 
 ```{r}
 # Create confusion matrix# as the matrix shows -> the model could reach an accuracy of 94.97% in previous runs
-conf_matrix_nnet= confusionMatrix(p_class_nnet , test_data[["stroke"]],positive = "stroke",mode = "everything")
-conf_matrix_nnet
+#conf_matrix_nnet= confusionMatrix(p_class_nnet , test_data[["stroke"]],positive = "stroke",mode = "everything")
+#conf_matrix_nnet
 ```
 
 
@@ -798,11 +804,10 @@ svm_linear <- train(stroke ~., data = training, method = "svmLinear",
 svm_linear
 ```
 
-When running our testing model we will get the prediction values with 0 (no-stroke) and 1 (stroke).
+When running our testing model we will get the prediction values with 0 (no-stroke) and 1 (stroke). In the following we use the predict function and pass the trained model and as new data we pass the testing data.
 
-```{r}
-#we use the predict function and pass the trained model 
-#and as new data we pass the testing data set
+```{r echo=T, results='hide'}
+#test predict with testing data
 test_pred <- predict(svm_linear, newdata = testing)
 test_pred
 ```
@@ -839,6 +844,8 @@ test_pred_grid <- predict(svm_linear_grid, newdata = testing)
 test_pred_grid 
 ```
 
+With the new test_pred_grid we can achieve an Accuracy of 95% which meand we could improve our model about 1%. 
+
 ```{r}
 confusionMatrix(table(test_pred_grid, testing$stroke))
 ```
@@ -847,18 +854,19 @@ confusionMatrix(table(test_pred_grid, testing$stroke))
 
 In the following the second approach for the SVM Model is presented. In a first step we again split the data set into training and testing data sets.
 
+
 ```{r}
 #create train and test data set for SVM Model with a split 70 (training) / 30 (test) 
 set.seed(7406)
-n=dim(stroke_data[1])  # number of observations in dataset
+n=dim(svm_stroke[1])  # number of observations in dataset
 n_train=0.70*n  # training set is 70%
 flag = sort(sample(1:n, size=n_train, replace=FALSE))
 ```
 
 ```{r}
 #use all parameters without first column id
-df_train_svm = stroke_data[flag,]
-df_test_svm = stroke_data[-flag,]
+df_train_svm = svm_stroke[flag,]
+df_test_svm = svm_stroke[-flag,]
 ```
 
 
@@ -872,28 +880,27 @@ ytest = df_test_svm$stroke
 table(df_train_svm$stroke)
 ```
 
+```{r}
+summary(df_train)
+summary(df_test)
+```
+
+In the following SVM Model we set the kernel to radial and cost to 5. In the following the SVM Classification Plot is shown. It seems that Age is the bigger influence on having a stroke or not compared to the BMI. 
 
 ```{r}
-svm_model_radial <- svm(stroke ~. , data = df_train, type = "C-classification", kernel = "radial")
+#setup our svm model with kernel set to radial
+svm_model_radial <- svm(stroke ~. , data = df_train_svm, type = "C-classification", kernel = "radial", cost = 5)
 summary(svm_model_radial)
-plot(svm_model_radial, data = df_train, bmi ~ age, slice = list(avg_glucose_level = 3))
-```
-
-```{r}
-str(df_test)
+plot(svm_model_radial, data = df_train_svm, bmi ~ age, slice = list(avg_glucose_level = 3))
 ```
 
 
-```{r}
-str(df_train)
-```
 
-
-In the following we checked the model fit with a confusion matrix with the help of the caret package's confusionMatrix() function. The following output shows an accuracy from 100%. 
+In the following we checked the model fit with a confusion matrix with the help of the caret package's confusionMatrix() function. The following output shows an Accuracy of 94% again. It seems that we receive the same results for the linear and the radial approach. 
 
 ```{r}
 #confusion matrix for training error
-svm_training_prediction <- predict(svm_model, newdata = df_train_svm)
+svm_training_prediction <- predict(svm_model_radial, newdata = df_train_svm)
 svm_training_error <- mean(svm_training_prediction != ytrain)
 confusionMatrix(svm_training_prediction, df_train_svm$stroke)
 svm_training_error
@@ -903,32 +910,41 @@ confusionMatrix(svm_training_prediction,df_train_svm$stroke)
 
 ```{r}
 #confusion matrix for test data
-svm_prediction <- predict(svm_model, newdata = df_test_svm)
+svm_prediction <- predict(svm_model_radial, newdata = df_test_svm)
 svm_test_error <- mean(svm_prediction != ytest)
 confusionMatrix(svm_prediction,df_test_svm$stroke)
 svm_test_error
 ```
 
+In the following we tune the parameters for the SVM while changing C.
 ```{r}
 #tune parameters for svm
 set.seed(123)
 tuned_svm <- tune(svm, stroke ~ . , data = df_train_svm, ranges = list(epsilon = seq(0, 1, 0.1), cost = 2^(2:5)))
 tuned_svm
 ```
+In the following plot we see the Performance of the SVM. The darker the colour, the lower the misclassification error. Therefore, we can say, the lower values and epsilon works best for our model. 
 
 ```{r}
 plot(tuned_svm)
 summary(tuned_svm)
 ```
 
+Now, lets choose the best model for our Data. 
+
 ```{r}
+#choose the best model based on hyperparameter 
 svm_after_tuned <- tuned_svm$best.model
 summary(svm_after_tuned)
 ```
 
 ```{r}
+#plot the tuned SVM model
 plot(svm_after_tuned, data = df_train_svm, bmi ~ age, slice = list(avg_glucose_level = 3))
 ```
+
+
+Again, we checked the Accuracy of the model after tuning the hyperparameters with the help of the confusion matrix. As we can see, the model receives an accuracy of 95%. Again, we receive the same results with the radial kernel as we did with the linear kernel.
 
 ```{r}
 # Confusion matrix after tuning hyperparameters
@@ -937,19 +953,12 @@ svm_tuned_test_error <- mean(svm_prediction_tuned != ytest)
 confusionMatrix(svm_prediction_tuned,df_test_svm$stroke)
 svm_tuned_test_error
 ```
-```{r}
-#conf_matrix <- confusionMatrix(test_pred, test_truth)
-#conf_matrix
-```
 
 ```{r}
 #compare the tuned prediction with the test data 
 confusionMatrix(svm_prediction_tuned,df_test_svm$stroke)
 ```
 
-# Compare Models
-
-# OPTIONAL solve an optimisation problem
 
 # Conclusion
 
