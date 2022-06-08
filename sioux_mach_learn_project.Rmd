@@ -53,7 +53,8 @@ We are a smart watch manufacturer working on a new feature for stroke prevention
 
 In the following project we are going to analyze survey data that we plan to ask our users, complementing it with HR (Heart Rate) and CGM (Continuous Glucose Monitoring) data that our product already measures. We hope that our feature can prevent serious health issues and motivate our users to adopt healthier lifestyles.
 
-We worked with a Stroke Prediction Data set from [@https://www.kaggle.com/datasets/fedesoriano/strokeprediction-dataset].
+We worked with a Stroke Prediction Data set from
+[@https://www.kaggle.com/datasets/fedesoriano/strokeprediction-dataset].
 
 In the following document, different calculation and models  are used. The different models are intended to reflect both the teaching content from the course and the knowledge that the authors have gained during the learning process itself. 
 
@@ -66,9 +67,11 @@ For the following work, different R packages have been used. The respective pack
 The first step was to research the relevant data. The data was imported into R. For simplicity, not all of the code is included. However, all code can be found in the original R Markdown file. 
 
 
-```{r}
+```{r echo=T, message=FALSE, warning=FALSE, results='hide'}
 stroke_data <- read_csv('./data/healthcare-dataset-stroke-data.csv')
+```
 
+```{r echo=T, results='hide'}
 stroke_data$age <- as.integer(stroke_data$age)
 stroke_data$smoking_status <- as.factor(stroke_data$smoking_status)
 stroke_data$work_type <- as.factor(stroke_data$work_type)
@@ -81,6 +84,7 @@ stroke_data$stroke <- as.factor(stroke_data$stroke)
 stroke_data
 ```
 
+\newpage
 
 # Data Cleaning and Exploratory Data Analysis
 
@@ -116,6 +120,7 @@ stroke_data$bmi <- as.numeric(stroke_data$bmi)
 stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
 ```
 
+\newpage
 
 ## Summaries
 
@@ -129,7 +134,7 @@ stroke_by_gender
 ```
 
 
-```{r include=FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 #testing the effect of non smokers and smokers
 count_by_smoke_status <- stroke_data %>% 
   select(smoking_status, stroke) %>%
@@ -137,21 +142,21 @@ count_by_smoke_status <- stroke_data %>%
   summarise( N = n())
 
 ```
-```{r}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 #testing the effect of work type
  count_by_work_type <- stroke_data %>% 
    select(work_type, stroke) %>% 
    group_by(work_type, stroke) %>%
    summarise( N = n())
 ```
-```{r}
+```{r message=FALSE, warning=FALSE, include=FALSE}
  # testing the effects of residence type
 count_by_residence_type <- stroke_data %>% 
    select(residence_type, stroke) %>% 
    group_by(residence_type, stroke) %>%
    summarise( N = n())
 ```
-```{r}
+```{r message=FALSE, warning=FALSE, include=FALSE}
  # testing the effects of gender
 count_by_gender <- stroke_data %>% 
    select(gender, stroke) %>% 
@@ -159,7 +164,7 @@ count_by_gender <- stroke_data %>%
    summarise( N = n())
 
 ```
-```{r}
+```{r message=FALSE, warning=FALSE, include=FALSE}
  # testing the effects of hypertension
 count_by_hypertension <- stroke_data %>% 
    select(hypertension, stroke) %>% 
@@ -167,14 +172,14 @@ count_by_hypertension <- stroke_data %>%
    summarise( N = n())
 
 ```
-```{r}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 # testing the effects of heart disease
 count_by_heart_disease <- stroke_data %>% 
    select(heart_disease, stroke) %>% 
    group_by(heart_disease, stroke) %>%
    summarise( N = n())
 ```
-```{r}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 # testing the effects of marriage status
 count_by_marriage <- stroke_data %>% 
    select(ever_married, stroke) %>% 
@@ -190,7 +195,7 @@ With the following Scatterplots the strength of the relation between the various
 
 The following scatterplots shows a positive correlation between stroke (1) and age as with stroke (1) and bmi. For bmi there seems to be too many outliers to see a correlation with stroke (1).
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 stroke_data %>% 
   ggplot(mapping = aes(x = bmi, y = age, color = stroke)) +
   geom_point() +
@@ -289,6 +294,12 @@ stroke_by_avg_glucose_level
 
 # Methodology
 
+!! Weglassen? Hat ja jeder seine eigenen Testsplits gemacht?!
+
+In the following chapter the different Models are implemented. As different data types and structures are needed for each model, there is no general part covering the preparation of the data. Each Model has an own introduction to the Methodology.
+
+Our aim is to predict strokes, and the stroke variable is always our response variable of interest in this use case. However, simple or multiple linear regression is not the tool of choice, as stroke is a binary response variable. 
+
 ```{r}
 set.seed(7406)
 n=dim(stroke_data[1])  # number of observations in dataset
@@ -330,8 +341,7 @@ head(df_test_linear)
 head(df_train_linear)
 ```
 
-Our aim is to predict strokes, and the stroke variable is always our response variable of interest in this use case. However, simple or multiple linear regression is not the tool of choice, as stroke is a binary response variable. 
-Thus in the following we will nonetheless fit a linear regression model to our data with stroke as the response variable. However, out of all the linear methods, we will only focus on on a binomial model with family set to "binomial" in greater detail.
+In the following we will nonetheless fit a linear regression model to our data with stroke as the response variable. However, out of all the linear methods, we will only focus on on a binomial model with family set to "binomial" in greater detail.
 
 ## Selecting Predictors for the model
 
@@ -371,6 +381,7 @@ summary(lm.stroke)
 plot(stroke_num ~ age + hypertension + heart_disease + avg_glucose_level, data = df_train_linear)
 abline(lm.stroke)
 ```
+
 Next, we evaluate the model fit with a confusion matrix. In the first example, we have constructed one "manually". 
 In all further examples we will be using the caret package's confusionMatrix() function.
 
@@ -737,23 +748,17 @@ myControl <- trainControl(
 
 
 
-
 # Support Vector Machine (Larissa)
 
 Stroke Data Classification using a Support Vector Machine. In the following two different approaches for the Stroke Data Classification are used. On one hand to compare the different approaches and on the other hand for the learning purpose. 
 
-In the following model "svm_linear" the SVM model is implemented with the caret package. Our target variable is the stroke parameter which contains 0 (noStroke) and 1 (stroke) which we want to predict. The first step is to split the data set into training and testing data. The training data is used for building the model and the testing data for evaluating the model.
-
-```{r}
-head(stroke_data)
-```
+In the following model "svm_linear" the SVM model is implemented with the caret package. Our target variable is the stroke parameter which contains 0 (noStroke) and 1 (stroke) which we want to predict. Here we use the approach with the kernel set to linear. The first step is to split the data set into training and testing data. The training data is used for building the model and the testing data for evaluating the model.
 
 As we need different data types and have to remove the gender "other" data point for an optimal performance of the SVM model, we create a need data set variable in the following. 
 
 ```{r}
 #define new data set
 svm_stroke <- stroke_data
-head(svm_stroke)
 ```
 
 
@@ -764,7 +769,7 @@ svm_stroke[svm_stroke == "Other"] <- "Female"
 
 
 
-```{r}
+```{r echo=T, results='hide'}
 #set numeric stoke data type to NUll
 svm_stroke$stroke_num <- NULL
 head(svm_stroke)
@@ -775,11 +780,13 @@ head(svm_stroke)
 ```{r}
 #split the data into test and train data with a split of 70 (training) / 30 (testing)
 set.seed(7406)
-intrain <- createDataPartition(y = svm_stroke$stroke, p = 0.7, list = FALSE)   #selecting our target variable "stroke"
+intrain <- createDataPartition(y = svm_stroke$stroke, p = 0.7, list = FALSE)   
+#selecting our target variable "stroke"
 training <- svm_stroke[intrain, ]
 testing <- svm_stroke[-intrain, ]
 
 ```
+
 
 ```{r}
 #checking the dimension of the training and testing data set
@@ -826,7 +833,7 @@ confusionMatrix(table(test_pred, testing$stroke))
 grid <- expand.grid(C = c(0, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2.5))
 ```
 
-The following output shows that the model shows the final value used for the model was C = 0.01.
+The following output shows that the final value used for the model was C = 0.01.
 
 ```{r message=FALSE, warning=FALSE}
 #improving the performance
@@ -840,7 +847,7 @@ svm_linear_grid
 ```
 
 
-```{r}
+```{r echo=T, results='hide'}
 test_pred_grid <- predict(svm_linear_grid, newdata = testing)
 test_pred_grid 
 ```
@@ -853,7 +860,7 @@ confusionMatrix(table(test_pred_grid, testing$stroke))
 
 \newpage
 
-In the following the second approach for the SVM Model is presented. In a first step we again split the data set into training and testing data sets.
+In the following the second approach for the SVM Model is presented. In a first step we again split the data set into training and testing data sets. In the following we set the kernel to radial to compare the two different methods. 
 
 
 ```{r}
@@ -881,7 +888,7 @@ ytest = df_test_svm$stroke
 table(df_train_svm$stroke)
 ```
 
-```{r}
+```{r echo=T, results='hide'}
 summary(df_train)
 summary(df_test)
 ```
@@ -896,8 +903,9 @@ plot(svm_model_radial, data = df_train_svm, bmi ~ age, slice = list(avg_glucose_
 ```
 
 
-
 In the following we checked the model fit with a confusion matrix with the help of the caret package's confusionMatrix() function. The following output shows an Accuracy of 94% again. It seems that we receive the same results for the linear and the radial approach. 
+
+The training error lies by 0.05 and the test error by 0.043.
 
 ```{r}
 #confusion matrix for training error
