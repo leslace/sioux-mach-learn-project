@@ -336,11 +336,6 @@ df_train_linear = stroke_data[flag,]
 df_test_linear = stroke_data[-flag,]
 ```
 
-```{r}
-head(df_test_linear)
-head(df_train_linear)
-```
-
 In the following we will nonetheless fit a linear regression model to our data with stroke as the response variable. However, out of all the linear methods, we will only focus on on a binomial model with family set to "binomial" in greater detail.
 
 ## Selecting Predictors for the model
@@ -350,40 +345,28 @@ Apart from testing out individual variables, we also tested a model with all pre
 ```{r}
 # fitting models for simple regression model
 lm.stroke.test <- lm(stroke_num ~ ., data = df_train_linear)
+lm.stroke.test <- update(lm.stroke.test, . ~ . -stroke)
 summary(lm.stroke.test)
 ```
-Out of the significant predictors above, we chose the following model for the linear model, glm, and gam:
+Out of the significant predictors above, we chose the model below for the linear model, glm, and gam. Furthermore, on the basis of subject matter research, we can assume an interaction between stroke and heart disease as well as between BMI and glucose level. This has been taken into account and is reflected in the model below.
 
 
 ```{r}
-# fitting models for simple regression model
-linear_model <- stroke_num ~ age + hypertension + heart_disease + avg_glucose_level
+# fitting model for regression
+linear_model <- stroke_num ~ age + hypertension * heart_disease + bmi * avg_glucose_level
 ```
 
 Although ever married theoretically returns a significant result, this is most probably confounded by age, as can be seen in the plot below, the subjects that are or were married at some point tend to be significantly older than those that have never married.
 The same is most likely true for the work type, with those having never worked being younger. What surprised us, though, is that smoking status did not have as big of an effect as we would have anticipated. 
 
-```{r}
-# fitting models for simple regression model
-lm.married <- lm(age ~ ever_married, data = df_train_linear)
-summary(lm.married)
- 
-plot(age ~ ever_married, data = df_train_linear)
-abline(lm.married)
-```
-
 
 ```{r}
 # fitting models for simple regression model
-lm.stroke <- lm(stroke_num ~ age + hypertension + heart_disease * avg_glucose_level, data = df_train_linear)
+lm.stroke <- lm(stroke_num ~ age + hypertension * heart_disease + bmi * avg_glucose_level, data = df_train_linear)
 summary(lm.stroke)
- 
-plot(stroke_num ~ age + hypertension + heart_disease + avg_glucose_level, data = df_train_linear)
-abline(lm.stroke)
 ```
-
-Next, we evaluate the model fit with a confusion matrix. In the first example, we have constructed one "manually". 
-In all further examples we will be using the caret package's confusionMatrix() function.
+The R-squared value suggests that only around 8% of the variation is accounted for by the model, which does not seem great.
+Next, we evaluate the model fit with a confusion matrix. We are aware that this would not be suitable for "regular" linear regression, but to make it more comparable to other models we have included it anyway. In the first example, we have constructed one "manually". In all further examples we will be using the caret package's confusionMatrix() function.
 
 ```{r}
 # Evaluating model fit using predict linear regression, example of a self-constructed confusion matrix
@@ -408,13 +391,15 @@ head(predicted.lm.stroke)
 
 confusionMatrix(as.factor(predicted.lm.stroke), as.factor(df_test_linear$stroke))
 ```
-
+Surprisingly, we get both an accuracy and also specificity that is higher than expected for this mis-application of the linear model.
 
 # Generalised Linear Model with family set to Poisson
 
+Once again, for our use case, a glm with family set to Poisson is a very sub-optimal choice, as we are dealing with a binary response variable. The only variable in our dataset that could be considered count data is the age, but trying to fit a model to the age as response variable seems equally nonsensical as fitting it to our binary response variable. So, for the sake of consistency we have again chosen to do the latter in line with our use case.
+
 ```{r}
 # text
-glm.stroke.poisson <- glm(stroke_num ~ age + heart_disease + hypertension + avg_glucose_level,
+glm.stroke.poisson <- glm(stroke_num ~ age + hypertension * heart_disease + bmi * avg_glucose_level,
 family = "poisson",
 data = df_train_linear)
 summary(glm.stroke.poisson)
@@ -426,33 +411,16 @@ ggplot(data = df_train_linear, aes(x = avg_glucose_level, y = stroke_num)) +
 
 ```
 
-Below is comparison of the fitted values versus the actual observed values within the training data set.
-
-```{r}
-# Evaluating model fit poisson
-
-# fitted(glm.stroke.poisson)
-fitted.glm.stroke.poisson <- ifelse(fitted(glm.stroke.poisson) < 0.2, yes = 0, no = 1)
-head(fitted.glm.stroke.poisson)
-
-obs.fitted.comp.poisson <- data.frame(obs = df_train_linear$stroke_num, fitted = fitted.glm.stroke.poisson)
-
-table(obs = obs.fitted.comp.poisson$obs, fit = obs.fitted.comp.poisson$fitted)
-
-table(obs = obs.fitted.comp.poisson$obs, fit = obs.fitted.comp.poisson$fitted) %>%
-  prop.table() %>%
-  round(digits = 2)
-```
-
+Once again, we are aware that this would not be standard procedure for the evalution of glm set to "poisson" for model evaluation. But we have set the same cutoff for classifying predicted values into stroke / no stroke as in the linear model, and created a confusion matrix.
 ```{r}
 # Evaluating model fit using predict linear regression using confusionMatrix()
 
 glm.stroke.poisson.prediction <- as.factor(ifelse(predict(glm.stroke.poisson, df_test_linear, type = "response") < 0.15, yes = 0, no = 1))
-head(glm.stroke.poisson.prediction)
 
 confusionMatrix(glm.stroke.poisson.prediction, df_test_linear$stroke)
 ```
 
+Here, we still have a higher accuracy than we expected for a misused model, with specificity being even slightly higher than with the linear model.
 
 # Generalised Linear Model with family set to Binomial
 Since we are essentially dealing with a classification issue, using logistic regression in the form of a GLM with family set to "binomial" is the best method to apply out of all the models introduced so far. For this reason, we shall go into more detail here.
@@ -465,13 +433,7 @@ family = "binomial",
 data = df_train_linear)
 summary(glm.stroke.binomial)
 ```
-
-```{r}
-prediction.glm <- predict(glm.stroke.binomial, df_test_linear, type = "response")
-# InformationValue::optimalCutoff(df_test_linear, prediction.glm)
-
-str(prediction.glm)
-```
+age + hypertension * heart_disease + bmi * avg_glucose_level
 
 ```{r}
 predicted.glm.stroke.binomial <- as.factor(ifelse(predict(glm.stroke.binomial, df_test_linear, type = "response") < 0.15, yes = 0, no = 1))
@@ -490,21 +452,13 @@ summary(glm.stroke.binomial)
 #plot(stroke ~ age + heart_disease + hypertension + work_type + avg_glucose_level + smoking_status, data = df_train_linear)
 #abline(glm.stroke.binomial)
 ```
+
 ```{r}
 # second iteration only keeping statistically relevant parameters from previous model
-glm.stroke.binomial.2 <- glm(stroke_num ~ age + heart_disease + hypertension + avg_glucose_level,
+glm.stroke.binomial.2 <- glm(stroke ~ age + hypertension * heart_disease + bmi * avg_glucose_level,
 family = "binomial",
 data = df_train_linear)
 summary(glm.stroke.binomial.2)
-# plot(stroke ~ age + heart_disease + hypertension + avg_glucose_level, data = df_train_linear)
-# abline(glm.stroke.binomial.2)
-
-pred <- predict(glm.stroke.binomial.2)
-# pred
-
-ggplot(data = df_train_linear, aes(x = age, y = stroke_num)) + 
-  geom_jitter(width = 0, height = 0.05) +
-  geom_smooth(method = "glm", method.args = list(family = "binomial"))
 
 ```
 ```{r}
@@ -523,7 +477,7 @@ confusionMatrix(predicted.glm.stroke.binomial.2, df_test_linear$stroke)
 ```{r}
 library(mgcv)
 
-gam.stroke <- gam(stroke_num ~ age + heart_disease + hypertension + avg_glucose_level,
+gam.stroke <- gam(stroke ~ age + hypertension * heart_disease + bmi * avg_glucose_level,
 family = "binomial",
 data = df_train_linear)
 summary(gam.stroke)
@@ -539,7 +493,6 @@ head(predicted.gam.stroke)
 
 confusionMatrix(predicted.gam.stroke, df_test_linear$stroke)
 ```
-
 
 
 # Neural Network Yves 
