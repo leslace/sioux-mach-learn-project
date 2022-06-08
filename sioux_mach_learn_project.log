@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.6.8)  8 JUN 2022 13:17
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.6.8)  8 JUN 2022 15:47
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -698,8 +698,8 @@ No file sioux_mach_learn_project.toc.
 [1
 
 {/Users/larissaeisele/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2]
-Overfull \hbox (23.26575pt too wide) in paragraph at lines 240--241
-[]\T1/lmr/m/n/10 We worked with a Stroke Pre-dic-tion Data set from ([]\T1/lmr/bx/n/10 https://www.kaggle.com/datasets/fedesoriano/stroke-
+Overfull \hbox (74.16171pt too wide) in paragraph at lines 240--241
+[]\T1/lmr/m/n/10 We worked with a Stroke Pre-dic-tion Data set from ([]\T1/lmr/bx/n/10 https://www.kaggle.com/datasets/fedesoriano/strokeprediction-
  []
 
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 254.
@@ -730,7 +730,7 @@ l.525 ... by Age"}\NormalTok{) }\SpecialCharTok{+}
                                                    
 Here is how much of TeX's memory you used:
  15925 strings out of 480253
- 245677 string characters out of 5892855
+ 245676 string characters out of 5892855
  614419 words of memory out of 5000000
  33529 multiletter control sequences out of 15000+600000
  511188 words of font info for 68 fonts, out of 8000000 for 9000

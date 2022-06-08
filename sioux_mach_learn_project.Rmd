@@ -53,7 +53,7 @@ We are a smart watch manufacturer working on a new feature for stroke prevention
 
 In the following project we are going to analyze survey data that we plan to ask our users, complementing it with HR (Heart Rate) and CGM (Continuous Glucose Monitoring) data that our product already measures. We hope that our feature can prevent serious health issues and motivate our users to adopt healthier lifestyles.
 
-We worked with a Stroke Prediction Data set from [@https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset].
+We worked with a Stroke Prediction Data set from [@https://www.kaggle.com/datasets/fedesoriano/strokeprediction-dataset].
 
 In the following document, different calculation and models  are used. The different models are intended to reflect both the teaching content from the course and the knowledge that the authors have gained during the learning process itself. 
 
@@ -119,7 +119,7 @@ stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
 
 ## Summaries
 
-In the following chapter, the different variables are summarized by no-stroke (0) and stroke (1). Please note that not all code is included in the PDF, the full code can be found in the rmarkdown. 
+In the following chapter, the different variables are summarized by noStroke (0) and stroke (1). Please note that not all code is included in the PDF, the full code can be found in the rmarkdown. 
 
 ```{r}
 #comparing gender with stroke
@@ -234,7 +234,7 @@ ggplot(stroke_data, aes(y = age)) +
   geom_boxplot() 
 ```
 
-The following boxplot visualizes the distribution no-Stroke (0) and Stroke (1) by Age. As we can see the median Age for people suffering a Stroke is higher and is around 76 years old. Also the Distribution besides a few outliers is smaller. 
+The following boxplot visualizes the distribution noStroke (0) and Stroke (1) by Age. As we can see the median Age for people suffering a Stroke is higher and is around 76 years old. Also the Distribution besides a few outliers is smaller. 
 
 ```{r echo=TRUE}
 stroke_by_age <- stroke_data %>%
@@ -256,7 +256,7 @@ ggplot(stroke_data, aes(y = bmi)) +
 geom_boxplot()
 ```
 
-In the following the distribution of the bmi by no-Stroke (0) and Stroke (1) is shown. As we can see the Median of the two variables are nearly the same around 26. For the people with no-Stroke (0) the distribution of the bmi is higher. There seems to be a lot of outliers with an high bmi.  
+In the following the distribution of the bmi by noStroke (0) and Stroke (1) is shown. As we can see the Median of the two variables are nearly the same around 26. For the people with noStroke (0) the distribution of the bmi is higher. There seems to be a lot of outliers with an high bmi.  
 
 ```{r}
 stroke_by_bmi <- stroke_data %>%
@@ -350,7 +350,7 @@ Out of the significant predictors above, we chose the following model for the li
 linear_model <- stroke_num ~ age + hypertension + heart_disease + avg_glucose_level
 ```
 
-Although ever_married theoretically returns a significant result, this is most probably confounded by age, as can be seen in the plot below, the subjects that are or were married at some point tend to be significantly older than those that have never married.
+Although ever married theoretically returns a significant result, this is most probably confounded by age, as can be seen in the plot below, the subjects that are or were married at some point tend to be significantly older than those that have never married.
 The same is most likely true for the work type, with those having never worked being younger. What surprised us, though, is that smoking status did not have as big of an effect as we would have anticipated. 
 
 ```{r}
@@ -742,7 +742,7 @@ myControl <- trainControl(
 
 Stroke Data Classification using a Support Vector Machine. In the following two different approaches for the Stroke Data Classification are used. On one hand to compare the different approaches and on the other hand for the learning purpose. 
 
-In the following model "svm_linear" the SVM model is implemented with the caret package. Our target variable is the stroke parameter which contains 0 (no-stroke) and 1 (stroke) which we want to predict. The first step is to split the data set into training and testing data. The training data is used for building the model and the testing data for evaluating the model.
+In the following model "svm_linear" the SVM model is implemented with the caret package. Our target variable is the stroke parameter which contains 0 (noStroke) and 1 (stroke) which we want to predict. The first step is to split the data set into training and testing data. The training data is used for building the model and the testing data for evaluating the model.
 
 ```{r}
 head(stroke_data)
@@ -787,7 +787,7 @@ dim(training)
 dim(testing)
 ```
 
-Implement the trainControl Method. This function will control the computation overheads which allow us to use the train function which is implemented by the caret package. In the following we use the trainControl function with the repeated cross-validation method, with a iteration of 10 and with repeates set to 3 to compute the repeated cross-validation 3 times.
+Implement the trainControl Method. This function will control the computation overheads which allow us to use the train function which is implemented by the caret package. In the following we use the trainControl function with the repeated crossvalidation method, with a iteration of 10 and with repeates set to 3 to compute the repeated crossvalidation 3 times.
 
 ```{r}
 #implement the train control method with the repeated cross-validation method, 
@@ -805,7 +805,7 @@ svm_linear <- train(stroke ~., data = training, method = "svmLinear",
 svm_linear
 ```
 
-When running our testing model we will get the prediction values with 0 (no-stroke) and 1 (stroke). In the following we use the predict function and pass the trained model and as new data we pass the testing data.
+When running our testing model we will get the prediction values with 0 (noStroke) and 1 (stroke). In the following we use the predict function and pass the trained model and as new data we pass the testing data.
 
 ```{r echo=T, results='hide'}
 #test predict with testing data
