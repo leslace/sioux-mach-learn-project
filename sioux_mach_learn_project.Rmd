@@ -741,16 +741,36 @@ In the following model "svm_linear" the SVM model is implemented with the caret 
 head(stroke_data)
 ```
 
+As we need different data types and have to remove the gender "other" data point for an optimal performance of the SVM model, we create a need data set variable in the following. 
+
 ```{r}
-svm_stroke_parameters <- 
+#define new data set
+svm_stroke <- stroke_data
+head(svm_stroke)
 ```
+
+
+```{r}
+#replace gender "Other" with "Female
+svm_stroke[svm_stroke == "Other"] <- "Female"
+```
+
+
+
+```{r}
+#set numeric stoke data type to NUll
+svm_stroke$stroke_num <- NULL
+head(svm_stroke)
+```
+
+
 
 ```{r}
 #split the data into test and train data with a split of 70 (training) / 30 (testing)
 set.seed(7406)
-intrain <- createDataPartition(y = stroke_data$stroke, p = 0.7, list = FALSE)   #selecting our target variable "stroke"
-training <- stroke_data[intrain, ]
-testing <- stroke_data[-intrain, ]
+intrain <- createDataPartition(y = svm_stroke$stroke, p = 0.7, list = FALSE)   #selecting our target variable "stroke"
+training <- svm_stroke[intrain, ]
+testing <- svm_stroke[-intrain, ]
 
 ```
 
@@ -787,15 +807,11 @@ test_pred <- predict(svm_linear, newdata = testing)
 test_pred
 ```
 
-In the next step we are going to test the accuracy of our model. We do this with the help of the confusionMatrix. The following output shows, that our model has an accuracy of 95%. Which seems to be quite good. However for the sake of completness, we going to improve our model with customizing cost values.   
+In the next step we are going to test the accuracy of our model. We do this with the help of the confusionMatrix. The following output shows, that our model has an accuracy of 94%. Which seems to be quite good. However for the sake of completeness, we going to improve our model with customizing cost values and the crossvalidation method. 
 
 ```{r}
 #testing the accuracy of our model with confusionMatrix
 confusionMatrix(table(test_pred, testing$stroke))
-```
-
-```{r}
-plot(svm_linear, test_pred)
 ```
 
 
@@ -817,9 +833,6 @@ svm_linear_grid <- train(stroke ~., data = training, method = "svmLinear",
 svm_linear_grid
 ```
 
-```{r}
-plot(svm_linear_grid)
-```
 
 ```{r}
 test_pred_grid <- predict(svm_linear_grid, newdata = testing)
@@ -849,7 +862,6 @@ df_test_svm = stroke_data[-flag,]
 ```
 
 
-
 ```{r}
 #define stroke train and test variables
 ytrain = df_train_svm$stroke
@@ -859,17 +871,23 @@ ytest = df_test_svm$stroke
 ```{r}
 table(df_train_svm$stroke)
 ```
+
+
 ```{r}
-#svm_model <- svm(stroke ~. , data = df_train_svm, kernel = "linear",scale = TRUE, cost = 10)
-#summary(svm_model)
-#plot(svm_model, data = df_train_svm, bmi ~ age, slice = list(avg_glucose_level = 3))
+svm_model_radial <- svm(stroke ~. , data = df_train, type = "C-classification", kernel = "radial")
+summary(svm_model_radial)
+plot(svm_model_radial, data = df_train, bmi ~ age, slice = list(avg_glucose_level = 3))
 ```
 
 ```{r}
-svm_model <- svm(stroke ~. , data = df_train_svm, type = "C-classification", kernel = "linear", )
-summary(svm_model)
-plot(svm_model, data = df_train_svm, bmi ~ age, slice = list(avg_glucose_level = 3))
+str(df_test)
 ```
+
+
+```{r}
+str(df_train)
+```
+
 
 In the following we checked the model fit with a confusion matrix with the help of the caret package's confusionMatrix() function. The following output shows an accuracy from 100%. 
 
