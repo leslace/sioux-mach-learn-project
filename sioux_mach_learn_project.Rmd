@@ -256,7 +256,7 @@ ggplot(stroke_data, aes(y = bmi)) +
 geom_boxplot()
 ```
 
-In the following the distribution of the bmi by no-Stroke (0) and Stroke (1) is shown. As we can see the Median of the two variables are nearly the same around 26. For the people with no-Stroke (0) the distribution of the bmi's is higher. There seems to be a lot of outliers with an high bmi.  
+In the following the distribution of the bmi by no-Stroke (0) and Stroke (1) is shown. As we can see the Median of the two variables are nearly the same around 26. For the people with no-Stroke (0) the distribution of the bmi is higher. There seems to be a lot of outliers with an high bmi.  
 
 ```{r}
 stroke_by_bmi <- stroke_data %>%
@@ -336,6 +336,7 @@ Thus in the following we will nonetheless fit a linear regression model to our d
 ## Selecting Predictors for the model
 
 Apart from testing out individual variables, we also tested a model with all predictors to find out about the significant ones, as selecting all variables may not necessarily lead to a more accurate model, and we might run into overfitting problems. Furthermore, our variable selection is also informed by our exploratory plots above, and what we intuitively believe to be accurate risk factors for a stroke.
+
 ```{r}
 # fitting models for simple regression model
 lm.stroke.test <- lm(stroke_num ~ ., data = df_train_linear)
