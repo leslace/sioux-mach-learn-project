@@ -242,7 +242,7 @@ stroke_by_age <- stroke_data %>%
  ggplot(aes(x = stroke,
             y = age)) +
   geom_boxplot(color="orange", fill="yellow", alpha=0.2) +
-  ggtitle("Boxplot on no−Stroke (0) and Stroke (1) by Age") + 
+  ggtitle("Boxplot on noStroke (0) and Stroke (1) by Age") + 
   xlab("Stroke") + ylab("Age") +
   theme_minimal() + theme(axis.text.x = element_text(angle = 0)) 
 stroke_by_age 
