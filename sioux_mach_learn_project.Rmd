@@ -374,12 +374,9 @@ Next, we evaluate the model fit with a confusion matrix. We are aware that this 
 # Evaluating model fit using predict linear regression, example of a self-constructed confusion matrix
 
 predicted.lm.stroke <- ifelse(predict(lm.stroke, df_test_linear, type = "response") < 0.15, yes = 0, no = 1)
-head(predicted.lm.stroke)
-
 obs.predicted.comp.lm <- data.frame(obs = df_test_linear$stroke_num, predicted = predicted.lm.stroke)
-
 table(obs = obs.predicted.comp.lm$obs, fit = obs.predicted.comp.lm$predicted)
-
+#expressed as percentages
 table(obs = obs.predicted.comp.lm$obs, fit = obs.predicted.comp.lm$predicted) %>%
   prop.table() %>%
   round(digits = 2)
@@ -389,17 +386,9 @@ table(obs = obs.predicted.comp.lm$obs, fit = obs.predicted.comp.lm$predicted) %>
 # Evaluating model fit using predict linear regression using confusionMatrix()
 
 predicted.lm.stroke <- ifelse(predict(lm.stroke, df_test_linear, type = "response") < 0.15, yes = 0, no = 1)
-head(predicted.lm.stroke)
-
 confusionMatrix(as.factor(predicted.lm.stroke), as.factor(df_test_linear$stroke))
 ```
 Surprisingly, we get both an accuracy and also specificity that is higher than expected for this mis-application of the linear model.
-
-```{r}
-# Evaluating model fit using predict linear regression using confusionMatrix()
-
-plot(lm.stroke)
-```
 
 # Generalised Linear Model with family set to Poisson
 
