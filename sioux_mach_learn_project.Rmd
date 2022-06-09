@@ -365,6 +365,8 @@ The same is most likely true for the work type, with those having never worked b
 lm.stroke <- lm(stroke_num ~ age + hypertension * heart_disease + bmi * avg_glucose_level, data = df_train_linear)
 summary(lm.stroke)
 ```
+
+
 The R-squared value suggests that only around 8% of the variation is accounted for by the model, which does not seem great.
 Next, we evaluate the model fit with a confusion matrix. We are aware that this would not be suitable for "regular" linear regression, but to make it more comparable to other models we have included it anyway. In the first example, we have constructed one "manually". In all further examples we will be using the caret package's confusionMatrix() function.
 
@@ -392,6 +394,12 @@ head(predicted.lm.stroke)
 confusionMatrix(as.factor(predicted.lm.stroke), as.factor(df_test_linear$stroke))
 ```
 Surprisingly, we get both an accuracy and also specificity that is higher than expected for this mis-application of the linear model.
+
+```{r}
+# Evaluating model fit using predict linear regression using confusionMatrix()
+
+plot(lm.stroke)
+```
 
 # Generalised Linear Model with family set to Poisson
 
@@ -424,53 +432,44 @@ Here, we still have a higher accuracy than we expected for a misused model, with
 
 # Generalised Linear Model with family set to Binomial
 Since we are essentially dealing with a classification issue, using logistic regression in the form of a GLM with family set to "binomial" is the best method to apply out of all the models introduced so far. For this reason, we shall go into more detail here.
+We start out again with all predictors available to us, and after some experimentation have decided to only model the interaction of heart disease and hypertension, as the BMI and glucose level do not seem to yield any significant interaction in the binomial model.
 
 ```{r}
 # Include all variables to start variable selection
-# Plot all of them for visual analysis
-glm.stroke.binomial <- glm(stroke ~ age + gender + avg_glucose_level + residence_type + work_type + heart_disease + hypertension + ever_married + bmi + smoking_status,
+
+glm.stroke.binomial <- glm(stroke ~ age + gender + avg_glucose_level + bmi + residence_type + work_type + heart_disease * hypertension + ever_married + smoking_status,
 family = "binomial",
 data = df_train_linear)
 summary(glm.stroke.binomial)
 ```
-age + hypertension * heart_disease + bmi * avg_glucose_level
 
 ```{r}
 predicted.glm.stroke.binomial <- as.factor(ifelse(predict(glm.stroke.binomial, df_test_linear, type = "response") < 0.15, yes = 0, no = 1))
-head(predicted.glm.stroke.binomial)
-
 confusionMatrix(predicted.glm.stroke.binomial, df_test_linear$stroke)
 ```
 
-
-```{r}
-# First iteration with parameters chosen from intuitive domain knowledge and exploratory analysis of data
-glm.stroke.binomial <- glm(stroke ~ age + heart_disease + hypertension + work_type + avg_glucose_level + smoking_status,
-family = "binomial",
-data = df_train_linear)
-summary(glm.stroke.binomial)
-#plot(stroke ~ age + heart_disease + hypertension + work_type + avg_glucose_level + smoking_status, data = df_train_linear)
-#abline(glm.stroke.binomial)
-```
+Mcnemar's Test P-Value indicates a highly significant result, which in this case means that one outcome is greatly more misclassified than the other, which we can also see in the matrix. However, since our app would only indicate that the user is at an elevated risk for stroke, we think that misclassifications as false positives may not be problematic and we might want to be our results to be skewed in that direction to recommend health and lifestyle improvements. For ethical and legal reasons, though, this elevated risk would have to be very carefully communicated and the caveats and limitations clearly pointed out the the end user.
+In the next step, we adjust the model to only include significant interactions from above.
 
 ```{r}
 # second iteration only keeping statistically relevant parameters from previous model
-glm.stroke.binomial.2 <- glm(stroke ~ age + hypertension * heart_disease + bmi * avg_glucose_level,
+glm.stroke.binomial.2 <- glm(stroke ~ age + hypertension * heart_disease + avg_glucose_level,
 family = "binomial",
 data = df_train_linear)
 summary(glm.stroke.binomial.2)
-
+exp(coef(glm.stroke.binomial.2))
 ```
+
+
 ```{r}
 predicted.glm.stroke.binomial.2 <- as.factor(ifelse(predict(glm.stroke.binomial.2, df_test_linear, type = "response") < 0.2, yes = 0, no = 1))
-head(predicted.glm.stroke.binomial.2)
 
 # predicted.glm.stroke.binomial.2 <- as.factor(predicted.glm.stroke.binomial.2)
 # predicted.glm.stroke.binomial.2 <- relevel(predicted.glm.stroke.binomial.2, "0")
 
 confusionMatrix(predicted.glm.stroke.binomial.2, df_test_linear$stroke)
 ```
-
+Using the same 0.2 cutoff to discretize values as above, we receive a slightly higher accuracy with the adjusted model compared to the one including all available predictors. However, this seems to come at a cost of specificity, i.e. the new model does less misclassifications (and more homogenous ones), but recognizes less actual stroke cases. Once again, we can heavily influence this by adjusting our cutoff value for discretization, depending on the use case we would want to maximize. Or rather, a decision would have to be made about which misclassifications are acceptable from both business and ethical perspectives, which we will discuss in the conclusion.
 
 
 # Generalised Additive Model
