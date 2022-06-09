@@ -495,202 +495,92 @@ confusionMatrix(predicted.gam.stroke, df_test_linear$stroke)
 
 
 # Neural Network Yves 
+Stroke Data Classification using a Neural Network. 
 
 ```{r}
-# read the csv agein, because the data needs to be idfferently prepared than in other model
-stroke_data_nn <- read_csv('./data/healthcare-dataset-stroke-data.csv')
+# First, let's get the data and make a new variable
 
+stroke_data_nn = stroke_data
 ```
 
 ```{r}
-# have a look at the data -> it is discovered, that bmi is not numeric, let's change that
+# open all the libraries needed
+
+library (dplyr)
+library (tidyverse)
+library (neuralnet)
+library (caret)
+```
+
+```{r}
+# lets ahve a look at the data 
 str(stroke_data_nn)
-
-stroke_data_nn[10] <- sapply(stroke_data_nn[10], as.numeric)
-
-str(stroke_data_nn)
-
-#install.packages("caret")
+stroke_data_nn %>% ggplot(aes(x= bmi, y = age, color= stroke)) + geom_point()
 ```
 
 ```{r}
-# make a df with only numeric values
-#numeric_var_original_scale <- stroke_data_nn %>% select(where(is.numeric) & !where(is.integer))
-
-#cat_var <- stroke_data_nn[,!(names(stroke_data_nn) %in% names(numeric_var_original_scale))] %>% select(-stroke)
-
-#target_var= (stroke_data_nn %>% select(stroke)) %>% 
-#  mutate(stroke=as.factor(ifelse(stroke==0, "no_stroke","stroke" )))
+#prepare the data for training
+set.seed(123)
+indices <- createDataPartition(stroke_data_nn$stroke, p=.7, list = F)
 ```
 
 ```{r}
-# have a look at the structure of each df
-#str(numeric_var)
-#str(cat_var)
-#str(target_var)
+# make supsets
+train <- stroke_data_nn %>%
+  slice(indices)
+test_in <- stroke_data_nn %>%
+  slice(-indices)%>%
+  select(-stroke)
+test_truth <- stroke_data_nn%>%
+  slice(-indices)%>%
+  pull(stroke)
 ```
 
 ```{r}
-#get parameters of center scale to use in train and unseen data with caret library
+# train the nural networtk with the variables (hypertension, heart disease and avg. glucose level)
 
-#library(caret)
+stroke_data_net <- neuralnet(stroke ~ hypertension + heart_disease + avg_glucose_level , train, hidden = c(4,3))
 
-#preproc.param_comp <- numeric_var_original_scale  %>% preProcess(method = c("center", "scale"))
+# plot the neural network itself
 
-#numeric_var <- preproc.param_comp %>% predict(numeric_var_original_scale)
-
-#predictors_var= cbind.data.frame(cat_var,numeric_var)
-
+plot(stroke_data_net)
 ```
 
 ```{r}
-#now we have:
-#head(target_var)
+# lets make the first predictions
+test_results <- neuralnet::compute(stroke_data_net,test_in)
+test_results$net.result
+# by having a look at the test_result, it can be discovered, that only the second column is of interest
+test_pred <- test_results$net.result[,2]
+#setting every value lower than 0.1 to 0
+test_pred <- as.factor(ifelse(test_pred < 0.1, yes = 0, no = 1))
+
+test_pred <- factor(levels(test_truth)[test_pred],levels = levels(test_truth))
+
+
+conf_matrix <- confusionMatrix(test_pred,test_truth)
+conf_matrix
 ```
+It can be discovered, that the model shows an accuracy of 90%, this can probaly improved. 
+The outcome shows aswell, that the model cannot really predict a stroke.
 
 ```{r}
-#NA values are already solved, so lets see if some predictors have small variances:
-# Identify near zero variance predictors: remove_cols
+# lets make an improved predictions
+test_results01 <- neuralnet::compute(stroke_data_net,test_in)
+test_results01$net.result
+# by having a look at the test_result, it can be discovered, that only the second column is of interest
+test_pred01 <- test_results$net.result[,2]
+#setting every value lower than 0.2 to 0
+test_pred01 <- as.factor(ifelse(test_pred01 < 0.2, yes = 0, no = 1))
 
-#remove_cols <- nearZeroVar(numeric_var, names = TRUE, 
-#                           freqCut = 10, uniqueCut = 20)
+test_pred01 <- factor(levels(test_truth)[test_pred01],levels = levels(test_truth))
 
-#remove_cols
+
+conf_matrix <- confusionMatrix(test_pred01,test_truth)
+conf_matrix
 ```
-
-```{r}
-#lets see if some predictor have some high leverage point
-#plot(numeric_var)
-```
-
-```{r}
-#it's ok for me, lets see correlation between variables matrix
-#numeric_varcor = numeric_var_original_scale
-#names(numeric_varcor) = c("Age", "Avg. glucose level", "BMI")
-
-#correlationMatrix1 <- round(cor(numeric_varcor),2) 
-
-```
-
-```{r}
-#highlyCorrelated <- findCorrelation(correlationMatrix1, cutoff=0.75) #useful for large matrices
-
-#print(highlyCorrelated)
-```
-
-```{r}
-#library(GGally)
-
-#corplot1 = ggpairs(numeric_varcor,diag=list(continuous= wrap("densityDiag",fill="palegreen1")),
-#                   lower= list(continuous = wrap("points", color = "red", alpha = 0.5)))+theme_bw()
-
-#full_data = cbind.data.frame(target_var, predictors_var)
-
-#70-30
-#train.index <- createDataPartition(target_var$stroke, p = 0.7, list = FALSE)
-
-#train_data_imb <- full_data[ train.index,]
-
-#test_data0 <- full_data[-train.index,]
-
-#dim(train_data_imb)
-
-#dim(test_data0)
-```
-
-```{r}
-#Let's upsampling to balance the data 
-
-#dummycar <- dummyVars(" ~ .", data=train_data_imb %>% select(-stroke))
-#train dummies
-#train_data_imb_dummy <- cbind.data.frame(stroke= train_data_imb %>% select(stroke), 
-#                                         predict(dummycar, newdata = train_data_imb %>% select(-stroke)))
-
-#names(train_data_imb_dummy) <- make.names(names(train_data_imb_dummy), unique=TRUE)
-
-#test dummies
-#test_data <- cbind.data.frame(stroke= test_data0 %>% select(stroke), 
-#                              predict(dummycar, newdata = test_data0 %>% #select(-stroke)))
-
-#names(test_data) <- make.names(names(test_data), unique=TRUE)
-
-#install.packages("imbalance")
-#library(imbalance)
-#print("Before upsampling")
-#table(train_data_imb_dummy$stroke)
-
-#numInst= table(train_data_imb_dummy$stroke)[1]-table(train_data_imb_dummy$stroke)[2]
-
-#mwmote1 <- mwmote(train_data_imb_dummy, numInstances = numInst,classAttr="stroke")
-```
-
-```{r}
-#I will set the decimals in the categories to 0 or 1, otherwise the variables would be treated as continuous
-#mwmote2=mwmote1 %>% select(-c(stroke,age,avg_glucose_level,bmi)) %>% 
- # apply(2,  FUN=function(x) ifelse(x > 0.5, 1, 0) )
-
-#mwmote3=cbind.data.frame(stroke=mwmote1[["stroke"]], mwmote2 ,
- #                        mwmote1 %>% select(age,avg_glucose_level,bmi ))
-
-#train_data=rbind.data.frame(train_data_imb_dummy, mwmote3)
-
-#print("After upsampling")
-#table(train_data$stroke)
-
-
-#tune_grid_nnet= expand.grid(size = seq(from = 39, to = 42, by = 1), decay = c(0,0.1,0.5))
-```
-
-```{r}
-#Create custom trainControl
-
-myControl <- trainControl(
-  method = "repeatedcv", 
-  number = 10,repeats=3,
-  summaryFunction = prSummary, #to include F1 score
-  classProbs = TRUE, search = "grid", 
-  verboseIter = TRUE, savePredictions =TRUE)
-
-```
-
-```{r}
-# let's train the model -> can the up to 3 hours depending on your procesor
-#install.packages('MLmetrics')
-
-#nnet_model <- train(
-#  stroke~.,
-#  data=train_data,
-#  method = "nnet",metric="F",
-#  trControl = myControl,
-#  tuneGrid = tune_grid_nnet	)
-```
-
-```{r}
-#lets have a look at the outcome
-#nnet_model
-```
-
-```{r}
-#lets check to confusion matrix on test data
-#prediction_nnet0= predict(nnet_model, test_data, type="prob")
-#dim(prediction_nnet0)
-```
-
-```{r}
-# If p exceeds threshold of 0.5
-#thresh_nnet = ifelse(prediction_nnet0[,"stroke"] > 0.5, "stroke","no_stroke")
-```
-
-```{r}
-# Convert to factor
-#p_class_nnet =as.factor(thresh_nnet)
-```
-
-```{r}
-# Create confusion matrix# as the matrix shows -> the model could reach an accuracy of 94.97% in previous runs
-#conf_matrix_nnet= confusionMatrix(p_class_nnet , test_data[["stroke"]],positive = "stroke",mode = "everything")
-#conf_matrix_nnet
-```
+It can be discovered, that the model shows an accuracy of 94.5%, slight improvement regarding the accuracy. 
+Still the Confusion MAtrix shows, that with the Data set given, a stroke cannot really be predicted.
 
 
 
