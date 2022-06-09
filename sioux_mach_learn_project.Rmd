@@ -320,7 +320,9 @@ head(df_train)
 ```
 
 
-# Linear Models
+# Linear Models and their Extensions (Fabian)
+
+## Linear Regression
 
 ```{r}
 set.seed(7406)
@@ -390,7 +392,7 @@ confusionMatrix(as.factor(predicted.lm.stroke), as.factor(df_test_linear$stroke)
 ```
 Surprisingly, we get both an accuracy and also specificity that is higher than expected for this mis-application of the linear model.
 
-# Generalised Linear Model with family set to Poisson
+## Generalised Linear Model with family set to Poisson
 
 Once again, for our use case, a glm with family set to Poisson is a very sub-optimal choice, as we are dealing with a binary response variable. The only variable in our dataset that could be considered count data is the age, but trying to fit a model to the age as response variable seems equally nonsensical as fitting it to our binary response variable. So, for the sake of consistency we have again chosen to do the latter in line with our use case.
 
@@ -400,12 +402,6 @@ glm.stroke.poisson <- glm(stroke_num ~ age + hypertension * heart_disease + bmi 
 family = "poisson",
 data = df_train_linear)
 summary(glm.stroke.poisson)
-#plot(stroke_num ~ age + heart_disease + hypertension + avg_glucose_level, data = df_train_linear)
-#abline(glm.stroke_poisson)
-ggplot(data = df_train_linear, aes(x = avg_glucose_level, y = stroke_num)) + 
-  geom_jitter(width = 0, height = 0.05) +
-  geom_smooth(method = "glm", method.args = list(family = "poisson"))
-
 ```
 
 Once again, we are aware that this would not be standard procedure for the evalution of glm set to "poisson" for model evaluation. But we have set the same cutoff for classifying predicted values into stroke / no stroke as in the linear model, and created a confusion matrix.
@@ -419,7 +415,7 @@ confusionMatrix(glm.stroke.poisson.prediction, df_test_linear$stroke)
 
 Here, we still have a higher accuracy than we expected for a misused model, with specificity being even slightly higher than with the linear model.
 
-# Generalised Linear Model with family set to Binomial
+## Generalised Linear Model with family set to Binomial
 Since we are essentially dealing with a classification issue, using logistic regression in the form of a GLM with family set to "binomial" is the best method to apply out of all the models introduced so far. For this reason, we shall go into more detail here.
 We start out again with all predictors available to us, and after some experimentation have decided to only model the interaction of heart disease and hypertension, as the BMI and glucose level do not seem to yield any significant interaction in the binomial model.
 
@@ -461,19 +457,19 @@ confusionMatrix(predicted.glm.stroke.binomial.2, df_test_linear$stroke)
 Using the same 0.2 cutoff to discretize values as above, we receive a slightly higher accuracy with the adjusted model compared to the one including all available predictors. However, this seems to come at a cost of specificity, i.e. the new model does less misclassifications (and more homogenous ones), but recognizes less actual stroke cases. Once again, we can heavily influence this by adjusting our cutoff value for discretization, depending on the use case we would want to maximize. Or rather, a decision would have to be made about which misclassifications are acceptable from both business and ethical perspectives, which we will discuss in the conclusion.
 
 
-# Generalised Additive Model
+## Generalized Additive Model
+
+For the GAM, we also chose the "binomial" family to fit our use case best. The advantage of using a GAM is the usage of splines, which we have applied to the variables age and avg_glucose_level, and the GAM will automatically fit the spline regression.
 ```{r}
 library(mgcv)
 
-gam.stroke <- gam(stroke ~ age + hypertension * heart_disease + bmi * avg_glucose_level,
+gam.stroke <- gam(stroke ~ s(age) + hypertension * heart_disease + s(avg_glucose_level),
 family = "binomial",
 data = df_train_linear)
 summary(gam.stroke)
 #plot(stroke ~ smoking_status, data = df_train_linear)
 #abline(gam.stroke)
-
 ```
-
 
 ```{r}
 predicted.gam.stroke <- as.factor(ifelse(predict( gam.stroke, df_test_linear, type = "response") < 0.2, yes = 0, no = 1))
@@ -481,7 +477,7 @@ head(predicted.gam.stroke)
 
 confusionMatrix(predicted.gam.stroke, df_test_linear$stroke)
 ```
-
+Using the GAM set to the "binomial" family only yields little improvement in accuracy over the binomial GLM at the same discretization cutoff, using the same formula. However, we do receive a slight improvement in specificity while reducing the overall misclassifications, which is something that would make us consider choosing the GAM over the GLM for our use case.
 
 # Neural Network Yves 
 Stroke Data Classification using a Neural Network. 
