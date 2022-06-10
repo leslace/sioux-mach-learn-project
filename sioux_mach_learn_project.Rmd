@@ -49,18 +49,16 @@ package.check <- lapply(packages, FUN = function(x) {
 
 # Introduction
 Use case:
-We are a smart watch manufacturer working on a new feature for stroke prevention. According to the World Health Organization (WHO) stroke is the 2nd leading cause of death globally, responsible for approximately 11% of total deaths. Therefore, our aim is to prevent stoke in future with the help of existing data and machine learning models. 
+We are a smart watch manufacturer working on a new feature for stroke prevention. According to the World Health Organization (WHO) stroke is the 2nd leading cause of death globally, responsible for approximately 11% of total deaths. Therefore, our aim is to prevent stroke in the future with the help of existing data and machine learning models. 
 
 In the following project we are going to analyze survey data that we plan to ask our users, complementing it with HR (Heart Rate) and CGM (Continuous Glucose Monitoring) data that our product already measures. We hope that our feature can prevent serious health issues and motivate our users to adopt healthier lifestyles.
 
-We worked with a Stroke Prediction Data set from
+For our analysis we worked with a Stroke Prediction Data set from
 [@https://www.kaggle.com/datasets/fedesoriano/strokeprediction-dataset].
 
 In the following document, different calculation and models  are used. The different models are intended to reflect both the teaching content from the course and the knowledge that the authors have gained during the learning process itself. 
 
 For the following work, different R packages have been used. The respective packages and their installation can be found in the original R Markdown file or the README. 
-
-!! Hier evtl auch Schwierigkeit von Linear Models beschreiben??
 
 # Importing Data and Change Type of Parameters
 
@@ -112,7 +110,7 @@ The data set contains 201 missing values in "bmi".
 colSums(is.na(stroke_data))
 ```
 
-As the data set given is already quite small and the missing values also concern data from people who had a stoke, we will replace the missing values with the mean "bmi" value. 
+As the data set given is already rather small and the missing values also concern data from people who had a stroke, we will replace the missing values with the mean "bmi" value instead of dropping these observations. 
 
 ```{r message=FALSE, warning=FALSE}
 #convert bmi as number and replace missing values with the mean value of bmi
@@ -124,7 +122,7 @@ stroke_data$bmi[is.na(stroke_data$bmi)] <- mean(stroke_data$bmi, na.rm = TRUE)
 
 ## Summaries
 
-In the following chapter, the different variables are summarized by noStroke (0) and stroke (1). Please note that not all code is included in the PDF, the full code can be found in the rmarkdown. 
+In the following chapter, the different variables are summarized by no stroke (0) and stroke (1). Please note that not all code is included in the PDF, the full code can be found in the R Markdown file 
 
 ```{r}
 #comparing gender with stroke
@@ -190,10 +188,10 @@ count_by_marriage <- stroke_data %>%
 
 ## Scatterplots
 
-With the following Scatterplots the strength of the relation between the various parameters should be visualized in more detail. These leads to a better understanding of the data. For the sake of simplicity we do not include all plots, the whole code can be found in the rmarkdown file.
+With the following scatter plots the strength of the relation between the various parameters should be visualized in more detail. These leads to a better understanding of the data. For the sake of simplicity we do not include all plots, the whole code can be found in the rmarkdown file.
 
 
-The following scatterplots shows a positive correlation between stroke (1) and age as with stroke (1) and bmi. For bmi there seems to be too many outliers to see a correlation with stroke (1).
+The following scatter plots shows a positive correlation between stroke (1) and age as with stroke (1) and bmi. For bmi there seems to be too many outliers to see a correlation with stroke (1).
 
 ```{r message=FALSE, warning=FALSE}
 stroke_data %>% 
@@ -224,7 +222,7 @@ stroke_data %>%
 
 ## Boxplots
 
-With the following Boxplots the distribution of the data points is visualized. Again, not all Boxplots are included. 
+With the following box plots the distribution of the data points is visualized. Again, not all box plots are included. 
 
 
 ```{r boxplot_gluc, include=FALSE}
@@ -239,7 +237,7 @@ ggplot(stroke_data, aes(y = age)) +
   geom_boxplot() 
 ```
 
-The following boxplot visualizes the distribution noStroke (0) and Stroke (1) by Age. As we can see the median Age for people suffering a Stroke is higher and is around 76 years old. Also the Distribution besides a few outliers is smaller. 
+The following box plot visualizes the distribution no stroke (0) and stroke (1) by age. As we can see the median age for people suffering a stroke is higher and is around 76 years old. Also the distribution, besides a few outliers, is narrower. 
 
 ```{r echo=TRUE}
 stroke_by_age <- stroke_data %>%
@@ -261,7 +259,7 @@ ggplot(stroke_data, aes(y = bmi)) +
 geom_boxplot()
 ```
 
-In the following the distribution of the bmi by noStroke (0) and Stroke (1) is shown. As we can see the Median of the two variables are nearly the same around 26. For the people with noStroke (0) the distribution of the bmi is higher. There seems to be a lot of outliers with an high bmi.  
+In the following the distribution of the bmi by no stroke (0) and stroke (1) is shown. As we can see the Median of the two variables are nearly the same around 26. For the people with no stroke (0) the distribution of the bmi is higher. There seems to be a lot of outliers with a high bmi.  
 
 ```{r}
 stroke_by_bmi <- stroke_data %>%
@@ -296,9 +294,7 @@ stroke_by_avg_glucose_level
 
 !! Weglassen? Hat ja jeder seine eigenen Testsplits gemacht?!
 
-In the following chapter the different Models are implemented. As different data types and structures are needed for each model, there is no general part covering the preparation of the data. Each Model has an own introduction to the Methodology.
-
-Our aim is to predict strokes, and the stroke variable is always our response variable of interest in this use case. However, simple or multiple linear regression is not the tool of choice, as stroke is a binary response variable. 
+In the following chapter the different models are implemented. As different data types and structures are needed for each model, there is no general part covering the preparation of the data. Each model has its introduction to the Methodology.
 
 ```{r}
 set.seed(7406)
@@ -325,6 +321,7 @@ head(df_train)
 ## Linear Regression
 
 ```{r}
+#divide dataset into training and testing data for later cross-validation
 set.seed(7406)
 n=dim(stroke_data[1])  # number of observations in dataset
 n_train=0.70*n  # training set is 70%
@@ -338,6 +335,8 @@ df_train_linear = stroke_data[flag,]
 df_test_linear = stroke_data[-flag,]
 ```
 
+
+Our aim is to predict strokes, and the stroke variable is always our response variable of interest in this use case. However, simple or multiple linear regression is not the tool of choice, as stroke is a binary response variable and the relationships of predictors to response variable are not linear. 
 In the following we will nonetheless fit a linear regression model to our data with stroke as the response variable. However, out of all the linear methods, we will only focus on on a binomial model with family set to "binomial" in greater detail.
 
 ## Selecting Predictors for the model
