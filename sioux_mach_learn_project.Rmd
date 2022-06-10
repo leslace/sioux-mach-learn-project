@@ -481,7 +481,7 @@ Using the GAM set to the "binomial" family only yields little improvement in acc
 
 
 # Neural Network Yves 
-Stroke Data Classification using a Neural Network. 
+Stroke Data Classification using a Neural Network. In the following model "stroke_data_nn" the Neural Network model is implemented with the neuralnet package. Our target variable is the stroke parameter which contains 0 (noStroke) and 1 (stroke) which we want to predict. The prediction was computed twice to see which factor levels result in more accuracy. The training data is used for building the model and the testing data for evaluating the model.
 
 ```{r}
 # First, let's get the data and make a new variable
