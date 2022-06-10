@@ -526,15 +526,16 @@ test_truth <- stroke_data_nn%>%
 
 library(neuralnet)
 
-stroke_data_net <- neuralnet(stroke ~ hypertension + heart_disease + avg_glucose_level , train, hidden = c(4,3))
+stroke_data_net <- neuralnet(stroke ~ hypertension + heart_disease + avg_glucose_level , train, hidden = c(4,3),stepmax=1e+05, linear.output = F)
 
 # plot the neural network itself to see how it look (in this case not plotted, takes quiet a while to compute)
 
-#plot(stroke_data_net)
+plot(stroke_data_net)
 ```
 
 ```{r}
 # lets make the first predictions
+
 test_results <- neuralnet::compute(stroke_data_net,test_in)
 test_results$net.result
 # by having a look at the test_result, it can be discovered, that only the second column is of interest
@@ -553,6 +554,8 @@ The outcome shows aswell, that the model cannot really predict a stroke.
 
 ```{r}
 # lets make an improved predictions
+
+
 test_results01 <- neuralnet::compute(stroke_data_net,test_in)
 test_results01$net.result
 # by having a look at the test_result, it can be discovered, that only the second column is of interest
@@ -566,8 +569,8 @@ test_pred01 <- factor(levels(test_truth)[test_pred01],levels = levels(test_truth
 conf_matrix <- confusionMatrix(test_pred01,test_truth)
 conf_matrix
 ```
-It can be discovered, that the model shows an accuracy of 94.5%,when the cutoff is set at 0.2. Slight improvement regarding the accuracy. 
-Still the Confusion Matrix shows, that with the Data set given, a stroke cannot really be predicted.
+It can be discovered, that the model shows an accuracy of 94.45%,when the cutoff is set at 0.2. Slight improvement regarding the accuracy. But a complete decrease in Specificity. No stroke detected.
+First 
 Overall can be said, tht as a smart watch manufacturer we should not market stroke prediction to our users base on the Neural Network Model.
 
 
