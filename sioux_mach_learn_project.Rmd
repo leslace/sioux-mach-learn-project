@@ -526,11 +526,11 @@ test_truth <- stroke_data_nn%>%
 
 library(neuralnet)
 
-stroke_data_net <- neuralnet(stroke ~ hypertension + heart_disease + avg_glucose_level , train, hidden = c(4,3),stepmax=1e+05, linear.output = F)
+stroke_data_net <- neuralnet(stroke ~ hypertension + heart_disease + avg_glucose_level , train, hidden = c(4,3),stepmax=1e+06, linear.output = T)
 
 # plot the neural network itself to see how it look (in this case not plotted, takes quiet a while to compute)
 
-plot(stroke_data_net)
+#plot(stroke_data_net)
 ```
 
 ```{r}
@@ -583,7 +583,7 @@ Overall can be said, tht as a smart watch manufacturer we should not market stro
 
 # Support Vector Machine (Larissa)
 
-Stroke Data Classification using a Support Vector Machine. In the following two different approaches for the Stroke Data Classification are used. On one hand to compare the different approaches and on the other hand for the learning purpose. 
+Stroke Data Classification using a Support Vector Machine. In the following two different approaches for the Stroke Data Classification are used.On the one hand, we want to use different approaches for comparability and, on the other hand, for the learning effect. 
 
 In the following model "svm_linear" the SVM model is implemented with the caret package. Our target variable is the stroke parameter which contains 0 (noStroke) and 1 (stroke) which we want to predict. Here we use the approach with the kernel set to linear. The first step is to split the data set into training and testing data. The training data is used for building the model and the testing data for evaluating the model. We designed the model with all the predictors. 
 
@@ -627,7 +627,7 @@ dim(training)
 dim(testing)
 ```
 
-Implement the trainControl Method. This function will control the computation overheads which allow us to use the train function which is implemented by the caret package. In the following we use the trainControl function with the repeated crossvalidation method, with a iteration of 10 and with repeates set to 3 to compute the repeated crossvalidation 3 times.
+Implement the trainControl Method. This function will control the computation overheads which allow us to use the train function which is implemented by the caret package. In the following we use the trainControl function with the repeated crossvalidation method, with a iteration of 10 and with repeats set to 3 to compute the repeated crossvalidation 3 times.
 
 ```{r}
 #implement the train control method with the repeated cross-validation method, 
@@ -800,7 +800,7 @@ confusionMatrix(svm_prediction_tuned,df_test_svm$stroke)
 svm_tuned_test_error
 ```
 
-```{r}
+```{r echo=T, results='hide'}
 #compare the tuned prediction with the test data 
 confusionMatrix(svm_prediction_tuned,df_test_svm$stroke)
 ```
