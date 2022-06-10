@@ -484,8 +484,7 @@ Stroke Data Classification using a Neural Network. In the following model "strok
 
 ```{r}
 # First, let's get the data and make a new variable
-
-stroke_data_nn = stroke_data
+stroke_data_nn <- stroke_data
 ```
 
 ```{r}
@@ -526,31 +525,60 @@ test_truth <- stroke_data_nn%>%
 
 library(neuralnet)
 
-stroke_data_net <- neuralnet(stroke ~ hypertension + heart_disease + avg_glucose_level , train, hidden = c(4,3),stepmax=1e+06, linear.output = T)
+stroke_data_net <- neuralnet(stroke ~ hypertension + heart_disease + avg_glucose_level , train, hidden = c(4,3),stepmax=1e+04, linear.output = T)
 
 # plot the neural network itself to see how it look (in this case not plotted, takes quiet a while to compute)
 
 #plot(stroke_data_net)
 ```
 
+
 ```{r}
 # lets make the first predictions
-
 test_results <- neuralnet::compute(stroke_data_net,test_in)
 test_results$net.result
+```
+
+```{r}
 # by having a look at the test_result, it can be discovered, that only the second column is of interest
 test_pred <- test_results$net.result[,2]
+```
+
+```{r}
 #Using 0.1 cutoff
 test_pred <- as.factor(ifelse(test_pred < 0.1, yes = 0, no = 1))
+```
 
+
+```{r}
 test_pred <- factor(levels(test_truth)[test_pred],levels = levels(test_truth))
+```
 
 
+```{r}
 conf_matrix <- confusionMatrix(test_pred,test_truth)
 conf_matrix
 ```
+
+```{r}
+# lets make the first predictions
+
+#test_results <- neuralnet::compute(stroke_data_net,test_in)
+#test_results$net.result
+# by having a look at the test_result, it can be discovered, that only the second column is of interest
+#test_pred <- test_results$net.result[,2]
+#Using 0.1 cutoff
+#test_pred <- as.factor(ifelse(test_pred < 0.1, yes = 0, no = 1))
+
+#test_pred <- factor(levels(test_truth)[test_pred],levels = levels(test_truth))
+
+
+#conf_matrix <- confusionMatrix(test_pred,test_truth)
+#conf_matrix
+```
 It can be discovered, that the model shows an accuracy of 90%, when the cutoff is set at 0.1. This can probably improved. 
 The outcome shows aswell, that the model cannot really predict a stroke.
+
 
 ```{r}
 # lets make an improved predictions
@@ -585,9 +613,9 @@ Overall can be said, tht as a smart watch manufacturer we should not market stro
 
 Stroke Data Classification using a Support Vector Machine. In the following two different approaches for the Stroke Data Classification are used.On the one hand, we want to use different approaches for comparability and, on the other hand, for the learning effect. 
 
-In the following model "svm_linear" the SVM model is implemented with the caret package. Our target variable is the stroke parameter which contains 0 (noStroke) and 1 (stroke) which we want to predict. Here we use the approach with the kernel set to linear. The first step is to split the data set into training and testing data. The training data is used for building the model and the testing data for evaluating the model. We designed the model with all the predictors. 
+In the following model "svm_linear" the SVM model is implemented with the caret package. Our target variable is the stroke parameter which contains 0 (noStroke) and 1 (stroke) which we want to predict. In the following we use the approach with the kernel set to linear. The first step is to split the dataset into training and testing data. The training data is used for building the model and the testing data for evaluating the model. We designed the model with all the predictors. 
 
-As we need different data types and have to remove the gender "other" data point for an optimal performance of the SVM model, we create a need data set variable in the following. 
+As we need different data types and have to remove the gender "other" data point for an optimal performance of the SVM model, we create a new data set variable in the following. 
 
 ```{r}
 #define new data set
