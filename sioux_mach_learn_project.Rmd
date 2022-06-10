@@ -536,7 +536,7 @@ stroke_data_net <- neuralnet(stroke ~ hypertension + heart_disease + avg_glucose
 ```{r}
 # lets make the first predictions
 test_results <- neuralnet::compute(stroke_data_net,test_in)
-test_results$net.result ()
+test_results$net.result
 # by having a look at the test_result, it can be discovered, that only the second column is of interest
 test_pred <- test_results$net.result[,2]
 #Using 0.1 cutoff
