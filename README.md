@@ -1,4 +1,5 @@
-# Applied Machine Learning I: Stroke Prediction with LM, GLM, NN and SVM
+# Applied Machine Learning I: Stroke Prediction 
+Linear Models, Generalised Linear Models, NN and SVM
 
 **Authors:**  Larissa Eisele, Fabian Lüthard & Yves Maillard
 
@@ -36,6 +37,11 @@ package.check <- lapply(packages, FUN = function(x) {
     }
 })
 ```
+
+# Comment: Neural Network
+
+Neural Network Model was not able to be knitted into a PDF File. Therefore, the code has been commented out in the rmarkdown. 
+The code works in the rmarkdown. Uncomment the lines in "eisele_luethard_maillard_mpm02.Rmd" Lines 471 to 567. 
 
 # Rendering
 In R-Studio click on the arrow on Knit then select "Knit to pdf_document2" or "Knit to pdf_html2". The following project was compiled using RStudio 2021.09.2 Build 382 and R version 4.1.2 (2021-11-01).
