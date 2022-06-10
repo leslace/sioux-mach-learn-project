@@ -528,7 +528,7 @@ stroke_data_net <- neuralnet(stroke ~ hypertension + heart_disease + avg_glucose
 
 # plot the neural network itself
 
-plot(stroke_data_net)
+#plot(stroke_data_net)
 ```
 
 ```{r}
