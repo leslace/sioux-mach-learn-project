@@ -389,8 +389,10 @@ table(obs = obs.predicted.comp.lm$obs, fit = obs.predicted.comp.lm$predicted) %>
 
 predicted.lm.stroke <- ifelse(predict(lm.stroke, df_test_linear, type = "response") < 0.15, yes = 0, no = 1)
 confusionMatrix(as.factor(predicted.lm.stroke), as.factor(df_test_linear$stroke))
+print("R-squared:")
+cor(as.numeric(predicted.lm.stroke), df_test_linear$stroke_num)^2
 ```
-Surprisingly, we get both an accuracy and also specificity that is higher than expected for this mis-application of the linear model.
+Surprisingly, we get both an accuracy and also specificity that is higher than expected for this mis-application of the linear model. However, not surprisingly considering that we fitted a binary response variable to a linear model, the R-squared sharply drops off in cross-validation on the test data compared to the training data.
 
 ## Generalised Linear Model with family set to Poisson
 
@@ -409,7 +411,6 @@ Once again, we are aware that this would not be standard procedure for the evalu
 # Evaluating model fit using predict linear regression using confusionMatrix()
 
 glm.stroke.poisson.prediction <- as.factor(ifelse(predict(glm.stroke.poisson, df_test_linear, type = "response") < 0.15, yes = 0, no = 1))
-
 confusionMatrix(glm.stroke.poisson.prediction, df_test_linear$stroke)
 ```
 
@@ -448,7 +449,6 @@ exp(coef(glm.stroke.binomial.2))
 
 ```{r}
 predicted.glm.stroke.binomial.2 <- as.factor(ifelse(predict(glm.stroke.binomial.2, df_test_linear, type = "response") < 0.2, yes = 0, no = 1))
-
 # predicted.glm.stroke.binomial.2 <- as.factor(predicted.glm.stroke.binomial.2)
 # predicted.glm.stroke.binomial.2 <- relevel(predicted.glm.stroke.binomial.2, "0")
 
@@ -473,11 +473,12 @@ summary(gam.stroke)
 
 ```{r}
 predicted.gam.stroke <- as.factor(ifelse(predict( gam.stroke, df_test_linear, type = "response") < 0.2, yes = 0, no = 1))
-head(predicted.gam.stroke)
+cor(as.numeric(predicted.gam.stroke), df_test_linear$stroke_num)^2
 
 confusionMatrix(predicted.gam.stroke, df_test_linear$stroke)
 ```
 Using the GAM set to the "binomial" family only yields little improvement in accuracy over the binomial GLM at the same discretization cutoff, using the same formula. However, we do receive a slight improvement in specificity while reducing the overall misclassifications, which is something that would make us consider choosing the GAM over the GLM for our use case.
+
 
 # Neural Network Yves 
 Stroke Data Classification using a Neural Network. 
