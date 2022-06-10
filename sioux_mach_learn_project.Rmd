@@ -585,7 +585,7 @@ Overall can be said, tht as a smart watch manufacturer we should not market stro
 
 Stroke Data Classification using a Support Vector Machine. In the following two different approaches for the Stroke Data Classification are used. On one hand to compare the different approaches and on the other hand for the learning purpose. 
 
-In the following model "svm_linear" the SVM model is implemented with the caret package. Our target variable is the stroke parameter which contains 0 (noStroke) and 1 (stroke) which we want to predict. Here we use the approach with the kernel set to linear. The first step is to split the data set into training and testing data. The training data is used for building the model and the testing data for evaluating the model.
+In the following model "svm_linear" the SVM model is implemented with the caret package. Our target variable is the stroke parameter which contains 0 (noStroke) and 1 (stroke) which we want to predict. Here we use the approach with the kernel set to linear. The first step is to split the data set into training and testing data. The training data is used for building the model and the testing data for evaluating the model. We designed the model with all the predictors. 
 
 As we need different data types and have to remove the gender "other" data point for an optimal performance of the SVM model, we create a need data set variable in the following. 
 
@@ -621,7 +621,7 @@ testing <- svm_stroke[-intrain, ]
 ```
 
 
-```{r}
+```{r include=FALSE}
 #checking the dimension of the training and testing data set
 dim(training)
 dim(testing)
@@ -653,7 +653,10 @@ test_pred <- predict(svm_linear, newdata = testing)
 test_pred
 ```
 
-In the next step we are going to test the accuracy of our model. We do this with the help of the confusionMatrix. The following output shows, that our model has an accuracy of 94%. Which seems to be quite good. However for the sake of completeness, we going to improve our model with customizing cost values and the crossvalidation method. 
+In the next step, we are going to test the accuracy of our model. We do this with the help of the confusionMatrix.The following output shows, that our model has an accuracy of 94%. Which seems to be quite good. As in our case, the false negative would lead to high damage, we should also consider the specificity as well as the sensitivity. 
+
+However, for the sake of completeness, we're going to improve our model with customizing cost values and the crossvalidation method. 
+
 
 ```{r}
 #testing the accuracy of our model with confusionMatrix
@@ -666,7 +669,7 @@ confusionMatrix(table(test_pred, testing$stroke))
 grid <- expand.grid(C = c(0, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2.5))
 ```
 
-The following output shows that the final value used for the model was C = 0.01.
+The following output shows that the final value used for the model was C = 0.01. But it seems that the Accuracy does not defer with different C Levels.
 
 ```{r message=FALSE, warning=FALSE}
 #improving the performance
@@ -765,14 +768,15 @@ set.seed(123)
 tuned_svm <- tune(svm, stroke ~ . , data = df_train_svm, ranges = list(epsilon = seq(0, 1, 0.1), cost = 2^(2:5)))
 tuned_svm
 ```
-In the following plot we see the Performance of the SVM. The darker the colour, the lower the misclassification error. Therefore, we can say, the lower values and epsilon works best for our model. 
+
+In the following plot we see the Performance of the SVM. The darker the colour, the lower the misclassification error. Therefore, we can say, the lower values works best for our model. 
 
 ```{r}
 plot(tuned_svm)
 summary(tuned_svm)
 ```
 
-Now, lets choose the best model for our Data. 
+Lets choose the best model for our Data. 
 
 ```{r}
 #choose the best model based on hyperparameter 
@@ -786,7 +790,7 @@ plot(svm_after_tuned, data = df_train_svm, bmi ~ age, slice = list(avg_glucose_l
 ```
 
 
-Again, we checked the Accuracy of the model after tuning the hyperparameters with the help of the confusion matrix. As we can see, the model receives an accuracy of 95%. Again, we receive the same results with the radial kernel as we did with the linear kernel.
+Again, we checked the Accuracy of the model after tuning the hyperparameters with the help of the confusion matrix. As we can see, the model receives an accuracy of 95%. Again, we receive the same results with the radial kernel as we did with the linear kernel. But with a low Specificity rate. Therefore, Tuning might not be right approach.
 
 ```{r}
 # Confusion matrix after tuning hyperparameters
