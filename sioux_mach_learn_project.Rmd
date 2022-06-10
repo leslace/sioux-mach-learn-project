@@ -290,31 +290,6 @@ stroke_by_avg_glucose_level
 ```
 
 
-# Methodology
-
-!! Weglassen? Hat ja jeder seine eigenen Testsplits gemacht?!
-
-In the following chapter the different models are implemented. As different data types and structures are needed for each model, there is no general part covering the preparation of the data. Each model has its introduction to the Methodology.
-
-```{r}
-set.seed(7406)
-n=dim(stroke_data[1])  # number of observations in dataset
-n_train=0.70*n  # training set is 70%
-flag = sort(sample(1:n, size=n_train, replace=FALSE))
-```
-```{r}
-# Use df (all data points without ID column) df_train, and df_test
-# Gender, hypertension, heart disease, ever married, work type, residence type, smoking status, and stroke are all factor types.
-# This should allow for the best modeling options possible for our methods.
-df_train = stroke_data[flag,]
-df_test = stroke_data[-flag,]
-```
-
-```{r}
-head(df_test)
-head(df_train)
-```
-
 
 # Linear Models and their Extensions (Fabian)
 
@@ -352,6 +327,7 @@ lm.stroke.test <- lm(stroke_num ~ ., data = df_train_linear)
 lm.stroke.test <- update(lm.stroke.test, . ~ . -stroke)
 summary(lm.stroke.test)
 ```
+
 Out of the significant predictors above, we chose the model below for the linear model, glm, and gam. Furthermore, on the basis of subject matter research, we can assume an interaction between stroke and heart disease as well as between BMI and glucose level. This has been taken into account and is reflected in the model below.
 
 
@@ -394,6 +370,7 @@ confusionMatrix(as.factor(predicted.lm.stroke), as.factor(df_test_linear$stroke)
 print("R-squared:")
 cor(as.numeric(predicted.lm.stroke), df_test_linear$stroke_num)^2
 ```
+
 Surprisingly, we get both an accuracy and also specificity that is higher than expected for this mis-application of the linear model. However, not surprisingly considering that we fitted a binary response variable to a linear model, the R-squared sharply drops off in cross-validation on the test data compared to the training data.
 
 ## Generalised Linear Model with family set to Poisson
@@ -408,6 +385,7 @@ summary(glm.stroke.poisson)
 ```
 
 Once again, we are aware that this would not be standard procedure for the evalution of glm set to "poisson" for model evaluation. But we have set the same cutoff for classifying predicted values into stroke / no stroke as in the linear model, and created a confusion matrix.
+
 ```{r echo = FALSE}
 # Evaluating model fit using predict linear regression using confusionMatrix()
 
@@ -459,6 +437,7 @@ Using the same 0.2 cutoff to discretize values as above, we receive a slightly h
 ## Generalized Additive Model
 
 For the GAM, we also chose the "binomial" family to fit our use case best. The advantage of using a GAM is the usage of splines, which we have applied to the variables age and avg_glucose_level, and the GAM will automatically fit the spline regression.
+
 ```{r include = FALSE}
 gam.stroke <- gam(stroke ~ s(age) + hypertension * heart_disease + s(avg_glucose_level),
 family = "binomial",
@@ -474,6 +453,7 @@ cor(as.numeric(predicted.gam.stroke), df_test_linear$stroke_num)^2
 
 confusionMatrix(predicted.gam.stroke, df_test_linear$stroke)
 ```
+
 Using the GAM set to the "binomial" family only yields little improvement in accuracy over the binomial GLM at the same discretization cutoff, using the same formula. However, we do receive a slight improvement in specificity while reducing the overall misclassifications, which is something that would make us consider choosing the GAM over the GLM for our use case.
 
 
@@ -481,13 +461,12 @@ Using the GAM set to the "binomial" family only yields little improvement in acc
 Stroke Data Classification using a Neural Network. In the following model "stroke_data_nn" the Neural Network model is implemented with the neuralnet package. Our target variable is the stroke parameter which contains 0 (noStroke) and 1 (stroke) which we want to predict. The prediction was computed twice to see which factor levels result in more accuracy. The training data is used for building the model and the testing data for evaluating the model.
 
 ```{r}
-# First, let's get the data and make a new variable
+#first, let's get the data and make a new variable
 stroke_data_nn <- stroke_data
 ```
 
 ```{r}
-# open all the libraries needed
-
+#open all the libraries needed
 library (dplyr)
 library (tidyverse)
 library (neuralnet)
@@ -495,7 +474,7 @@ library (caret)
 ```
 
 ```{r}
-# lets ahve a look at the data 
+#lets have a look at the data 
 str(stroke_data_nn)
 stroke_data_nn %>% ggplot(aes(x= bmi, y = age, color= stroke)) + geom_point()
 ```
@@ -507,7 +486,7 @@ indices <- createDataPartition(stroke_data_nn$stroke, p=.7, list = F)
 ```
 
 ```{r}
-# make supsets
+#make subsets
 train <- stroke_data_nn %>%
   slice(indices)
 test_in <- stroke_data_nn %>%
@@ -519,13 +498,12 @@ test_truth <- stroke_data_nn%>%
 ```
 
 ```{r include=FALSE}
-# train the nural networtk with the variables (hypertension, heart disease and avg. glucose level)
-
+#train the neural network with the variables (hypertension, heart disease and avg. glucose level)
 library(neuralnet)
 
 stroke_data_net <- neuralnet(stroke ~ hypertension + heart_disease + avg_glucose_level , train, hidden = c(4,3),stepmax=1e+06, linear.output = T)
 
-# plot the neural network itself to see how it look (in this case not plotted, takes quiet a while to compute)
+#plot the neural network itself to see how it looks (in this case not plotted, takes quiet a while to compute)
 
 #plot(stroke_data_net)
 ```
@@ -538,12 +516,12 @@ test_results$net.result
 ```
 
 ```{r}
-# by having a look at the test_result, it can be discovered, that only the second column is of interest
+#by having a look at the test_result, it can be discovered, that only the second column is of interest
 test_pred <- test_results$net.result[,2]
 ```
 
 ```{r}
-#Using 0.1 cutoff
+#using 0.1 cutoff
 test_pred <- as.factor(ifelse(test_pred < 0.1, yes = 0, no = 1))
 ```
 
@@ -559,7 +537,7 @@ conf_matrix
 ```
 
 ```{r}
-# lets make the first predictions
+#lets make the first predictions
 
 #test_results <- neuralnet::compute(stroke_data_net,test_in)
 #test_results$net.result
@@ -574,19 +552,19 @@ conf_matrix
 #conf_matrix <- confusionMatrix(test_pred,test_truth)
 #conf_matrix
 ```
-It can be discovered, that the model shows an accuracy of 90%, when the cutoff is set at 0.1. This can probably improved. 
-The outcome shows aswell, that the model cannot really predict a stroke.
+
+It can be discovered, that the model shows an accuracy of 90%, when the cutoff is set at 0.1. This could probably be improved. The outcome also shows that the model cannot really predict a stroke.
 
 
 ```{r}
-# lets make an improved predictions
-
-
+#lets make an improved predictions
 test_results01 <- neuralnet::compute(stroke_data_net,test_in)
 test_results01$net.result
+
 # by having a look at the test_result, it can be discovered, that only the second column is of interest
 test_pred01 <- test_results$net.result[,2]
-#Using 0.2 cutoff
+
+#using 0.2 cutoff
 test_pred01 <- as.factor(ifelse(test_pred01 < 0.2, yes = 0, no = 1))
 
 test_pred01 <- factor(levels(test_truth)[test_pred01],levels = levels(test_truth))
@@ -595,16 +573,13 @@ test_pred01 <- factor(levels(test_truth)[test_pred01],levels = levels(test_truth
 conf_matrix <- confusionMatrix(test_pred01,test_truth)
 conf_matrix
 ```
-It can be discovered, that the model shows an accuracy of 94.45%,when the cutoff is set at 0.2. Slight improvement regarding the accuracy. But a complete decrease in Specificity. No stroke detected.
-First 
-Overall can be said, tht as a smart watch manufacturer we should not market stroke prediction to our users base on the Neural Network Model.
 
+It can be discovered, that the model shows an accuracy of 94.45%,when the cutoff is set at 0.2. Slight improvement regarding the accuracy. But a complete decrease in Specificity.
 
-
+Overall it can be said, that as a smart watch manufacturer we should not market stroke prediction to our users based on the Neural Network Model.
 
 
 ################################
-
 
 
 # Support Vector Machine (Larissa)
