@@ -524,20 +524,22 @@ test_truth <- stroke_data_nn%>%
 ```{r}
 # train the nural networtk with the variables (hypertension, heart disease and avg. glucose level)
 
+library(neuralnet)
+
 stroke_data_net <- neuralnet(stroke ~ hypertension + heart_disease + avg_glucose_level , train, hidden = c(4,3))
 
-# plot the neural network itself
+# plot the neural network itself to see how it look (in this case not plotted, takes quiet a while to compute)
 
-plot(stroke_data_net)
+#plot(stroke_data_net)
 ```
 
 ```{r}
 # lets make the first predictions
 test_results <- neuralnet::compute(stroke_data_net,test_in)
-test_results$net.result
+test_results$net.result ()
 # by having a look at the test_result, it can be discovered, that only the second column is of interest
 test_pred <- test_results$net.result[,2]
-#setting every value lower than 0.1 to 0
+#Using 0.1 cutoff
 test_pred <- as.factor(ifelse(test_pred < 0.1, yes = 0, no = 1))
 
 test_pred <- factor(levels(test_truth)[test_pred],levels = levels(test_truth))
@@ -546,7 +548,7 @@ test_pred <- factor(levels(test_truth)[test_pred],levels = levels(test_truth))
 conf_matrix <- confusionMatrix(test_pred,test_truth)
 conf_matrix
 ```
-It can be discovered, that the model shows an accuracy of 90%, this can probaly improved. 
+It can be discovered, that the model shows an accuracy of 90%, when the cutoff is set at 0.1. This can probably improved. 
 The outcome shows aswell, that the model cannot really predict a stroke.
 
 ```{r}
@@ -555,7 +557,7 @@ test_results01 <- neuralnet::compute(stroke_data_net,test_in)
 test_results01$net.result
 # by having a look at the test_result, it can be discovered, that only the second column is of interest
 test_pred01 <- test_results$net.result[,2]
-#setting every value lower than 0.2 to 0
+#Using 0.2 cutoff
 test_pred01 <- as.factor(ifelse(test_pred01 < 0.2, yes = 0, no = 1))
 
 test_pred01 <- factor(levels(test_truth)[test_pred01],levels = levels(test_truth))
@@ -564,8 +566,9 @@ test_pred01 <- factor(levels(test_truth)[test_pred01],levels = levels(test_truth
 conf_matrix <- confusionMatrix(test_pred01,test_truth)
 conf_matrix
 ```
-It can be discovered, that the model shows an accuracy of 94.5%, slight improvement regarding the accuracy. 
-Still the Confusion MAtrix shows, that with the Data set given, a stroke cannot really be predicted.
+It can be discovered, that the model shows an accuracy of 94.5%,when the cutoff is set at 0.2. Slight improvement regarding the accuracy. 
+Still the Confusion Matrix shows, that with the Data set given, a stroke cannot really be predicted.
+Overall can be said, tht as a smart watch manufacturer we should not market stroke prediction to our users base on the Neural Network Model.
 
 
 
