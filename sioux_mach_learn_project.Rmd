@@ -798,5 +798,5 @@ confusionMatrix(svm_prediction_tuned,df_test_svm$stroke)
 
 
 # Conclusion
-
+All our approaches lead to interesting outcomes. The accuracy of the models(SVM,NN,GAM) range betwenn 94% - 95%, means the predicitions calculated, compared to the test data was quiet accurate. Nevertheless, when we have a closer look at the all the confusionmattrix of each model, it is clearly visible, that these models cannot really predict a stroke or which factor could increase the risk of having a stroke.
 \newpage
